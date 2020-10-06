@@ -1,0 +1,64 @@
+I"�<p>My <a href="https://github.com/serg-ios/pub-loc/blob/main/TFG_2018_Rodriguez_Rama_Sergio.pdf">Degree Final Project</a> was an iOS app to receive offers and discounts, based on the user’s location, in outdoor and indoor areas. Using an indoor positioning system called <a href="https://situm.com/en/">Situm</a>.</p>
+
+<p><img src="../assets/img/publoc/publoc.jpg" alt="" /></p>
+
+<h2 id="things-learned">Things learned</h2>
+
+<p>🗺 Google Maps SDK</p>
+
+<p>🔑 Google Sign In</p>
+
+<p>🎊 Particle emitters with CAEmitterLayer</p>
+
+<p>🔥 Firebase</p>
+
+<ul>
+  <li>Real time database, streaming changes with <code class="language-plaintext highlighter-rouge">text/event-stream</code></li>
+  <li>REST API to read and write the database</li>
+  <li>Cloud functions
+    <ul>
+      <li>Database triggered</li>
+      <li>HTTP triggered</li>
+    </ul>
+  </li>
+</ul>
+
+<p>📍 Situm SDK</p>
+
+<p>📷 QR generation and scanning</p>
+
+<p><img src="../assets/img/publoc/publoc_scan.jpg" alt="drawing" width="150" /></p>
+
+<p>⏲️ Cron jobs to activate the HTTP triggered cloud functions</p>
+
+<p>🎙️ Siri shortcuts</p>
+
+<p>📨 Testing requests with Postman</p>
+
+<p>🖌️ UI design with Adobe Xd</p>
+
+<h2 id="how-does-it-work">How does it work</h2>
+
+<ul>
+  <li>Employers
+    <ul>
+      <li>Create offers</li>
+      <li>Register employees</li>
+    </ul>
+  </li>
+  <li>Employees
+    <ul>
+      <li>Scan QR codes</li>
+    </ul>
+  </li>
+  <li>Users
+    <ul>
+      <li>Receive offers</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="video-responsive">
+	<iframe src="https://www.youtube.com/embed/AGd70H6F-IA?vq=hd1080&amp;mute=1" frameborder="0" allowfullscreen=""></iframe>
+</div>
+:ET

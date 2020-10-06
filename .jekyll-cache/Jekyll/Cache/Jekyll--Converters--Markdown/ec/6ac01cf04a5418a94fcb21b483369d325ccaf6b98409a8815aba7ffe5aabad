@@ -1,0 +1,74 @@
+I"�<p>One of my very first own projects, was an app to control my DIY ambilight system. I built it in 2018 and I am very proud of it, although the code needs some improvement.</p>
+
+<p>It was available for a year on the App Store and got a few thousand downloads. Presently, you can <a href="https://github.com/serg-ios/ambibox-control">download</a> it from my repo.</p>
+
+<p><img src="../assets/img/ambibox/ambibox.jpg" alt="" /></p>
+
+<h2 id="things-learned">Things learned</h2>
+
+<p>💾 <strong>Core Data</strong> to store in disk the static and dynamic backgrounds that the user creates.</p>
+
+<p>🌐 <strong>TCP connections</strong> to communicate with the AmbiBox’s server API.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">buffer</span> <span class="o">=</span> <span class="kt">UnsafeMutablePointer</span><span class="o">&lt;</span><span class="kt">UInt8</span><span class="o">&gt;.</span><span class="nf">allocate</span><span class="p">(</span><span class="nv">capacity</span><span class="p">:</span> <span class="mi">4096</span><span class="p">)</span>
+
+<span class="k">var</span> <span class="nv">inputStream</span><span class="p">:</span> <span class="kt">InputStream</span><span class="p">?</span>
+<span class="k">var</span> <span class="nv">outputStream</span><span class="p">:</span> <span class="kt">OutputStream</span><span class="p">?</span>
+
+<span class="k">var</span> <span class="nv">lastInputEvent</span><span class="p">:</span> <span class="kt">Stream</span><span class="o">.</span><span class="kt">Event</span><span class="p">?</span>
+<span class="k">var</span> <span class="nv">lastOutputEvent</span><span class="p">:</span> <span class="kt">Stream</span><span class="o">.</span><span class="kt">Event</span><span class="p">?</span>
+</code></pre></div></div>
+
+<p>➕ Views without storyboard, regular expression management, timers, time triggered notifications, and so on.</p>
+
+<h2 id="how-does-it-works">How does it works?</h2>
+
+<p>A picture is worth a thousand words.</p>
+
+<div class="video-responsive">
+	<iframe src="https://www.youtube.com/embed/5A9H6IOgq54?vq=hd1080&amp;mute=1" frameborder="0" allowfullscreen=""></iframe>
+</div>
+
+<hr />
+
+<table>
+  <tbody>
+    <tr>
+      <td><strong>0:00</strong></td>
+      <td>Connect to the AmbiBox server</td>
+      <td>🔌</td>
+    </tr>
+    <tr>
+      <td><strong>0:05</strong></td>
+      <td>Turn on / off</td>
+      <td>🌗</td>
+    </tr>
+    <tr>
+      <td><strong>0:15</strong></td>
+      <td>Static backgrounds</td>
+      <td>🌈</td>
+    </tr>
+    <tr>
+      <td><strong>3:22</strong></td>
+      <td>Dynamic backgrounds</td>
+      <td>🎆</td>
+    </tr>
+    <tr>
+      <td><strong>4:58</strong></td>
+      <td>Profile selection for movies</td>
+      <td>🎬</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="whats-necessary">What’s necessary?</h2>
+
+<p>🤖 Arduino with <a href="https://learn.adafruit.com/adalight-diy-ambient-tv-lighting/overview">Adalight</a> running</p>
+
+<p>🖥️ Computer with <a href="http://www.ambibox.ru/en/index.php/Download_AmbiBox">AmbiBox</a> installed</p>
+
+<p>👨🏻‍💻 AmbiBox <a href="http://www.ambibox.ru/en/index.php/API_server">TCP API</a> enabled</p>
+
+<p>📱 iPhone with <a href="https://github.com/serg-ios/ambibox-control">AmbiBox control</a> installed</p>
+
+<p class="box-note">I also made an Instructables <a href="https://www.instructables.com/AmbiBox-IOS-Remote-Control-App/">guide</a> to make installation easier.</p>
+:ET

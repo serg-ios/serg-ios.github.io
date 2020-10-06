@@ -1,0 +1,53 @@
+I"<p>I have been working since 2017 on projects related to Mobile App Development.</p>
+
+<h3 id="-nomasystems"><img src="../assets/img/experience/noma.jpg" alt="drawing" width="50" /> NomaSystems</h3>
+
+<p>🗓️ <strong>February 2018 - Current</strong></p>
+
+<p>Mantaining e-commerce iOS apps with millions of users.</p>
+
+<h6 id="-acquired-skills">💪🏻 Acquired skills</h6>
+
+<ul>
+  <li>Objective-C and Swift coexistance</li>
+  <li>Retain cycles detection with Instruments</li>
+  <li>MVC, MVVM, Observer, Singleton</li>
+  <li>Functional programming</li>
+  <li>Unit testing, TDD</li>
+  <li>UIKit, ARKit</li>
+  <li>Continuous integration</li>
+  <li>Git submodules</li>
+  <li>Kanban board</li>
+  <li>Remote working</li>
+</ul>
+
+<hr />
+
+<h3 id="-instituto-tecnológico-de-galicia"><img src="../assets/img/experience/itg.png" alt="drawing" width="50" /> Instituto Tecnológico de Galicia</h3>
+
+<p>🗓️ <strong>October 2017 - December 2017</strong></p>
+
+<p>Internship, three months developing Android apps to communicate with BLE devices.</p>
+
+<h6 id="-acquired-skills-1">💪🏻 Acquired skills</h6>
+
+<ul>
+  <li>BLE communications</li>
+  <li>Shell scripting</li>
+</ul>
+
+<hr />
+
+<h3 id="-class-one"><img src="../assets/img/experience/classone.png" alt="drawing" width="50" /> Class One</h3>
+
+<p>🗓️ <strong>July 2017 - September 2017</strong></p>
+
+<p>Internship, three months developing an Android app to make reservations at restaurants.</p>
+
+<h6 id="-acquired-skills-2">💪🏻 Acquired skills</h6>
+
+<ul>
+  <li>Android development</li>
+  <li>REST APIs</li>
+</ul>
+:ET

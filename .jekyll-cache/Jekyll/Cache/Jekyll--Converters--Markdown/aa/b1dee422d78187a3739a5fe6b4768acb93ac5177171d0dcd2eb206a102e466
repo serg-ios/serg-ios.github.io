@@ -1,0 +1,31 @@
+I"s<p>Along with a <a href="https://www.linkedin.com/in/juansantiagomartin/">colleague</a>, we developed a funny app that can find the hidden words of a word search. Once the words are found, the solution is placed over the puzzle with Augmented Reality.</p>
+
+<p>It was available for a year on the App Store and got a few thousand downloads.</p>
+
+<p><img src="../assets/img/wordsearch/wordsearch.jpg" alt="" /></p>
+
+<h2 id="things-learned">Things learned</h2>
+
+<p>🛒 App Store upload process</p>
+
+<p>🤖 SceneKit and ARKit, the solution is placed always over the puzzle, when it changes its position or orientation, the solution changes with it. Multiple solutions can be visible at the same time over their respective word search puzzles</p>
+
+<p>🖍️ UIBezierPaths to mark the solutions</p>
+
+<p>📦 CocoaPods as dependency manager</p>
+
+<h2 id="frameworks-used">Frameworks used</h2>
+
+<p>🔎 <a href="https://firebase.google.com/docs/ml-kit/ios/recognize-text">FirebaseMLVision</a> for text recognition.</p>
+
+<p>✂️ <a href="https://github.com/TimOliver/TOCropViewController">TOCropViewController</a> to cut the images out.</p>
+
+<h2 id="how-does-it-works">How does it works?</h2>
+
+<p>A picture is worth a thousand words.</p>
+
+<div class="video-responsive">
+	<iframe src="https://www.youtube.com/embed/LfIDUhi-lrY?vq=hd1080&amp;mute=1" frameborder="0" allowfullscreen=""></iframe>
+</div>
+
+:ET

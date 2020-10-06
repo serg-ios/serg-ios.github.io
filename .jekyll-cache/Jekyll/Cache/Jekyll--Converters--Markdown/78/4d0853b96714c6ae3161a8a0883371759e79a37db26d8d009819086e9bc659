@@ -1,0 +1,456 @@
+I"�<p>When I am reading a book in a foreign language, I use Google Translate to translate those words that I don’t understand…</p>
+
+<h2 id="index">Index</h2>
+
+<ol>
+  <li><a href="#index">Index</a></li>
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#first-steps">First steps</a></li>
+  <li><a href="#google-cloud-platform">Google Cloud Platform</a></li>
+  <li><a href="#url-types-configuration">URL Types configuration</a></li>
+  <li><a href="#google-sign-in-swiftui-implementation">Google Sign In, SwiftUI implementation</a></li>
+  <li><a href="#dont-upload-api-keys-to-git">Don’t upload API Keys to Git</a></li>
+  <li><a href="#download-spreadsheets-from-google-drive">Download spreadsheets from Google Drive</a></li>
+  <li><a href="#parse-spreadsheets-translations">Parse spreadsheet’s translations</a></li>
+</ol>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>If I want to save some words, I mark them as favourites, pressing the star button for each word.</p>
+
+<p><img src="../assets/img/my-vocabulary/google-cloud/google-translate.png" width="250" /></p>
+
+<p>This is very useful because if I go to <a href="https://translate.google.es/">https://translate.google.es/</a>, I sign in with the same account and I can export that words into a XLSX file.</p>
+
+<p><img src="../assets/img/my-vocabulary/create-excel.png" width="250" /> <img src="../assets/img/my-vocabulary/drive-file.png" width="258" /></p>
+
+<h3 id="so">So…</h3>
+
+<p>I want to build an app that downloads this file from Google Drive and helps me learn the words with games, Apple Watch complications, widgets, etc.</p>
+
+<h2 id="first-steps">First steps</h2>
+
+<p>I created an empty SwiftUI project with UIKit App Delegate life cycle.</p>
+
+<p><img src="../assets/img/my-vocabulary/create-project.png" width="250" /></p>
+
+<p>Then, I added <code class="language-plaintext highlighter-rouge">GoogleSignIn</code> and <code class="language-plaintext highlighter-rouge">GoogleAPIClientForREST/Drive</code> libraries to it, using CocoaPods.</p>
+
+<p>To add CocoaPods to a project, run <code class="language-plaintext highlighter-rouge">pod init</code> in its main directory. If you don’t have <code class="language-plaintext highlighter-rouge">pod</code> installed in your computer, check <a href="https://cocoapods.org/">this</a>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>🙈 ~/Desktop/my-vocabulary/MyVocabulary$pod init
+Ignoring ffi-1.12.2 because its extensions are not built. Try: gem pristine ffi --version 1.12.2
+Ignoring sassc-2.3.0 because its extensions are not built. Try: gem pristine sassc --version 2.3.0
+Ignoring unf_ext-0.0.7.7 because its extensions are not built. Try: gem pristine unf_ext --version 0.0.7.7
+[!] Existing Podfile found in directory
+</code></pre></div></div>
+
+<p>In my case, <code class="language-plaintext highlighter-rouge">Podfile</code> already exists, but the first time you run this command, it’ll be created.</p>
+
+<p>The deployment target of my app is iOS 14.0, but your <code class="language-plaintext highlighter-rouge">Podfile</code> must look like mine.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>platform :ios, '14.0'
+
+target 'MyVocabulary' do
+  use_frameworks!
+  pod 'GoogleSignIn'
+  pod 'GoogleAPIClientForREST/Drive'
+end
+</code></pre></div></div>
+
+<p>These libraries are necessary because I will need to authenticate myself in order to access my Google Drive files.</p>
+
+<p>Finish and run <code class="language-plaintext highlighter-rouge">pod install</code>.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>🙈 ~/Desktop/my-vocabulary/MyVocabulary$pod install
+Ignoring ffi-1.12.2 because its extensions are not built. Try: gem pristine ffi --version 1.12.2
+Ignoring sassc-2.3.0 because its extensions are not built. Try: gem pristine sassc --version 2.3.0
+Ignoring unf_ext-0.0.7.7 because its extensions are not built. Try: gem pristine unf_ext --version 0.0.7.7
+Analyzing dependencies
+Downloading dependencies
+Installing AppAuth (1.4.0)
+Installing GTMAppAuth (1.1.0)
+Installing GTMSessionFetcher (1.5.0)
+Installing GoogleAPIClientForREST (1.5.1)
+Installing GoogleSignIn (5.0.2)
+Generating Pods project
+Integrating client project
+Pod installation complete! There are 2 dependencies from the Podfile and 5 total pods installed.
+</code></pre></div></div>
+
+<p>Once you’ve installed CocoaPods, close your project, open Xcode again and select your <strong>workspace</strong>. This is very important, otherwise, your project won’t build.</p>
+
+<p><img src="../assets/img/my-vocabulary/pods-xcode.png" width="350" /></p>
+
+<h2 id="google-cloud-platform">Google Cloud Platform</h2>
+
+<p>The first thing that must be done is authentication with Google credentials in order to access Google Drive.</p>
+
+<p>It’s necessary an Google API Key .</p>
+
+<ol>
+  <li>Visit your Google Cloud Platform <a href="https://console.cloud.google.com/projectselector2/home/dashboard">dashboard</a> and create a project.</li>
+  <li>
+    <p>Give a name to it.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/google_project_name.jpg" width="250" /></p>
+  </li>
+  <li>
+    <p>Go to your APIs.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/see-apis.png" width="125" /></p>
+  </li>
+  <li>
+    <p>Enable Google Drive API.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/enable-drive.png" width="250" /></p>
+  </li>
+  <li>
+    <p>Create credentials.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/create-credentials.png" width="250" /></p>
+  </li>
+  <li>
+    <p>Configure OAuth screen.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/configure-oauth2.png" width="350" /></p>
+  </li>
+  <li>
+    <p>Add testing emails, here you should add the Google account in which you have your translations. You will not be able to sign in during development with no registered testing emails.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/oauth-email.png" width="350" /></p>
+  </li>
+  <li>
+    <p>Finish the configuration of your OAuth client.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/finish.png" width="150" /></p>
+  </li>
+  <li>
+    <p>In APIs and Services &gt; Credentials, download the <code class="language-plaintext highlighter-rouge">plist</code> that contains <code class="language-plaintext highlighter-rouge">CLIENT_ID</code> and <code class="language-plaintext highlighter-rouge">REVERSED_CLIENT_ID</code>.</p>
+
+    <p><img src="../assets/img/my-vocabulary/google-cloud/download.png" /></p>
+  </li>
+</ol>
+
+<h2 id="url-types-configuration">URL Types configuration</h2>
+
+<p>Open the <strong>workspace</strong> of your project and go to Target &gt; Info &gt; <strong>Url Types</strong>.</p>
+
+<p>You should add two <strong>Url Types</strong>, one with the value of the <code class="language-plaintext highlighter-rouge">CLIENT_ID</code> as URL Scheme and the other with the value of the <code class="language-plaintext highlighter-rouge">REVERSED_CLIENT_ID</code> of the downloaded file.</p>
+
+<p><img src="../assets/img/my-vocabulary/url-types.png" width="600" /></p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="cp">&lt;!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"&gt;</span>
+<span class="nt">&lt;plist</span> <span class="na">version=</span><span class="s">"1.0"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;dict&gt;</span>
+	<span class="nt">&lt;key&gt;</span>CLIENT_ID<span class="nt">&lt;/key&gt;</span>
+	<span class="nt">&lt;string&gt;</span>xxxxxxxxxxxxx.apps.googleusercontent.com<span class="nt">&lt;/string&gt;</span>
+	<span class="nt">&lt;key&gt;</span>REVERSED_CLIENT_ID<span class="nt">&lt;/key&gt;</span>
+	<span class="nt">&lt;string&gt;</span>com.googleusercontent.apps.xxxxxxxxxxxxx<span class="nt">&lt;/string&gt;</span>
+	<span class="nt">&lt;key&gt;</span>PLIST_VERSION<span class="nt">&lt;/key&gt;</span>
+	<span class="nt">&lt;string&gt;</span>1<span class="nt">&lt;/string&gt;</span>
+	<span class="nt">&lt;key&gt;</span>BUNDLE_ID<span class="nt">&lt;/key&gt;</span>
+	<span class="nt">&lt;string&gt;</span>com.serg-ios.MyVocabulary<span class="nt">&lt;/string&gt;</span>
+<span class="nt">&lt;/dict&gt;</span>
+<span class="nt">&lt;/plist&gt;</span>
+</code></pre></div></div>
+
+<p>Build the project, everything should work fine 🤞</p>
+
+<h2 id="google-sign-in-swiftui-implementation">Google Sign In, SwiftUI implementation</h2>
+
+<p><a name="didsignin">Google Sign In needs a delegate that will receive all the feedback of the process.</a></p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">import</span> <span class="kt">GoogleSignIn</span>
+
+<span class="kd">class</span> <span class="kt">GoogleSignInDelegate</span><span class="p">:</span> <span class="kt">NSObject</span><span class="p">,</span> <span class="kt">GIDSignInDelegate</span><span class="p">,</span> <span class="kt">ObservableObject</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">sign</span><span class="p">(</span><span class="n">_</span> <span class="nv">signIn</span><span class="p">:</span> <span class="kt">GIDSignIn</span><span class="o">!</span><span class="p">,</span> <span class="n">didSignInFor</span> <span class="nv">user</span><span class="p">:</span> <span class="kt">GIDGoogleUser</span><span class="o">!</span><span class="p">,</span> <span class="n">withError</span> <span class="nv">error</span><span class="p">:</span> <span class="kt">Error</span><span class="o">!</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">guard</span> <span class="n">error</span> <span class="o">==</span> <span class="kc">nil</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// Handle errors.</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"Google Sign In - success"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p><a name="appdelegate">The singleton that handles the sign in process needs the <code class="language-plaintext highlighter-rouge">clientID</code> property and its delegate to be setted, this must be done in the <code class="language-plaintext highlighter-rouge">didFinishLaunchingWithOptions</code> method of out <code class="language-plaintext highlighter-rouge">AppDelegate</code>.</a></p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">@main</span>
+<span class="kd">class</span> <span class="kt">AppDelegate</span><span class="p">:</span> <span class="kt">UIResponder</span><span class="p">,</span> <span class="kt">UIApplicationDelegate</span> <span class="p">{</span>
+
+    <span class="k">let</span> <span class="nv">googleSignDelegate</span> <span class="o">=</span> <span class="kt">GoogleSignInDelegate</span><span class="p">()</span>
+
+    <span class="kd">func</span> <span class="nf">application</span><span class="p">(</span><span class="n">_</span> <span class="nv">application</span><span class="p">:</span> <span class="kt">UIApplication</span><span class="p">,</span> <span class="n">didFinishLaunchingWithOptions</span> <span class="nv">launchOptions</span><span class="p">:</span> <span class="p">[</span><span class="kt">UIApplication</span><span class="o">.</span><span class="kt">LaunchOptionsKey</span><span class="p">:</span> <span class="kt">Any</span><span class="p">]?)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span> <span class="p">{</span>
+        <span class="kt">GIDSignIn</span><span class="o">.</span><span class="nf">sharedInstance</span><span class="p">()</span><span class="o">.</span><span class="n">clientID</span> <span class="o">=</span> <span class="s">"xxxxxxxxxxxxx.apps.googleusercontent.com"</span>
+        <span class="kt">GIDSignIn</span><span class="o">.</span><span class="nf">sharedInstance</span><span class="p">()</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="n">googleSignDelegate</span>
+        <span class="k">return</span> <span class="kc">true</span>
+    <span class="p">}</span>
+
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now, the <strong>Google Sign In</strong> button must be implemented. We can create our own custom view but we are going to use the default one provided by Google. Unfortunately, this button is not available in SwiftUI, to use it <code class="language-plaintext highlighter-rouge">UIViewRepresentable</code> must be implemented.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">import</span> <span class="kt">GoogleSignIn</span>
+<span class="kd">import</span> <span class="kt">SwiftUI</span>
+
+<span class="kd">struct</span> <span class="kt">GoogleSignInButton</span><span class="p">:</span> <span class="kt">UIViewRepresentable</span> <span class="p">{</span>
+
+    <span class="kd">@Environment</span><span class="p">(\</span><span class="o">.</span><span class="n">colorScheme</span><span class="p">)</span> <span class="k">var</span> <span class="nv">colorScheme</span>
+
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">button</span><span class="p">:</span> <span class="kt">GIDSignInButton</span> <span class="o">=</span> <span class="kt">GIDSignInButton</span><span class="p">()</span>
+
+    <span class="kd">func</span> <span class="nf">makeUIView</span><span class="p">(</span><span class="nv">context</span><span class="p">:</span> <span class="kt">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">GIDSignInButton</span> <span class="p">{</span>
+        <span class="n">button</span><span class="o">.</span><span class="n">colorScheme</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">colorScheme</span> <span class="o">==</span> <span class="o">.</span><span class="n">dark</span> <span class="p">?</span> <span class="o">.</span><span class="nv">dark</span> <span class="p">:</span> <span class="o">.</span><span class="n">light</span>
+        <span class="k">return</span> <span class="n">button</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">updateUIView</span><span class="p">(</span><span class="n">_</span> <span class="nv">uiView</span><span class="p">:</span> <span class="kt">UIViewType</span><span class="p">,</span> <span class="nv">context</span><span class="p">:</span> <span class="kt">Context</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">button</span><span class="o">.</span><span class="n">colorScheme</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">colorScheme</span> <span class="o">==</span> <span class="o">.</span><span class="n">dark</span> <span class="p">?</span> <span class="o">.</span><span class="nv">dark</span> <span class="p">:</span> <span class="o">.</span><span class="n">light</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Using <code class="language-plaintext highlighter-rouge">GIDSignInButton</code> is <strong>not necessary</strong> to call the <code class="language-plaintext highlighter-rouge">signIn</code> method manually.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">GIDSignIn</span><span class="o">.</span><span class="nf">sharedInstance</span><span class="p">()?</span><span class="o">.</span><span class="nf">signIn</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>You’re almost ready to go, go to your <code class="language-plaintext highlighter-rouge">ContentView</code> and replace its default body implementation for this one…</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">ContentView</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="kt">NavigationView</span> <span class="p">{</span>
+            <span class="kt">VStack</span> <span class="p">{</span>
+                <span class="kt">Spacer</span><span class="p">()</span>
+                <span class="kt">GoogleSignInButton</span><span class="p">()</span>
+                    <span class="o">.</span><span class="nf">frame</span><span class="p">(</span><span class="nv">alignment</span><span class="p">:</span> <span class="o">.</span><span class="n">center</span><span class="p">)</span>
+                    <span class="o">.</span><span class="nf">padding</span><span class="p">(</span><span class="o">.</span><span class="n">horizontal</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+                    <span class="o">.</span><span class="nf">navigationTitle</span><span class="p">(</span><span class="s">"My Vocabulary"</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Now run the project, press the button that appears in the top of the screen and you’ll see an error.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Terminating app due to uncaught exception 'NSInvalidArgumentException', 
+reason: 'presentingViewController must be set.'
+</code></pre></div></div>
+
+<p>The Google Sign In singleton has a property <code class="language-plaintext highlighter-rouge">presentingViewController</code> that must refer the view controller that will present the sign in screen. To fix this, some changes must be done in our <code class="language-plaintext highlighter-rouge">SceneDelegate</code>.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">import</span> <span class="kt">UIKit</span>
+<span class="kd">import</span> <span class="kt">SwiftUI</span>
+<span class="kd">import</span> <span class="kt">GoogleSignIn</span>
+
+<span class="kd">class</span> <span class="kt">SceneDelegate</span><span class="p">:</span> <span class="kt">UIResponder</span><span class="p">,</span> <span class="kt">UIWindowSceneDelegate</span> <span class="p">{</span>
+
+    <span class="k">var</span> <span class="nv">window</span><span class="p">:</span> <span class="kt">UIWindow</span><span class="p">?</span>
+
+    <span class="kd">func</span> <span class="nf">scene</span><span class="p">(</span><span class="n">_</span> <span class="nv">scene</span><span class="p">:</span> <span class="kt">UIScene</span><span class="p">,</span> <span class="n">willConnectTo</span> <span class="nv">session</span><span class="p">:</span> <span class="kt">UISceneSession</span><span class="p">,</span> <span class="n">options</span> <span class="nv">connectionOptions</span><span class="p">:</span> <span class="kt">UIScene</span><span class="o">.</span><span class="kt">ConnectionOptions</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">googleSignDelegate</span> <span class="o">=</span> <span class="p">(</span><span class="kt">UIApplication</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="n">delegate</span> <span class="k">as!</span> <span class="kt">AppDelegate</span><span class="p">)</span><span class="o">.</span><span class="n">googleSignDelegate</span>
+        <span class="k">let</span> <span class="nv">contentView</span> <span class="o">=</span> <span class="kt">ContentView</span><span class="p">()</span>
+        <span class="k">if</span> <span class="k">let</span> <span class="nv">windowScene</span> <span class="o">=</span> <span class="n">scene</span> <span class="k">as?</span> <span class="kt">UIWindowScene</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">window</span> <span class="o">=</span> <span class="kt">UIWindow</span><span class="p">(</span><span class="nv">windowScene</span><span class="p">:</span> <span class="n">windowScene</span><span class="p">)</span>
+            <span class="n">window</span><span class="o">.</span><span class="n">rootViewController</span> <span class="o">=</span> <span class="kt">UIHostingController</span><span class="p">(</span><span class="nv">rootView</span><span class="p">:</span> <span class="n">contentView</span><span class="p">)</span>
+            <span class="c1">// Set the window root view controller as the `GIDSignIn` presenting view controller.</span>
+            <span class="kt">GIDSignIn</span><span class="o">.</span><span class="nf">sharedInstance</span><span class="p">()</span><span class="o">.</span><span class="n">presentingViewController</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">rootViewController</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="n">window</span>
+            <span class="n">window</span><span class="o">.</span><span class="nf">makeKeyAndVisible</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Run the project, press the button again and select an account that you included in the list “test emails” during the Google Cloud Platform configuration.</p>
+
+<p><img src="../assets/img/my-vocabulary/login.png" width="250" /> <img src="../assets/img/my-vocabulary/select-account.png" width="250" /></p>
+
+<p>Look for this message in the Xcode logs…</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Google Sign In - success
+</code></pre></div></div>
+
+<p>Hurray!! 🎉 🥳 🎊</p>
+
+<p>You have implemented the simplest sign in with Google, no handling errors, no keeping session open after closing the app… But this will come later.</p>
+
+<h2 id="dont-upload-api-keys-to-git">Don’t upload API Keys to Git</h2>
+
+<p>If you have a public repository you might want to hide your Google Sign In Client ID.</p>
+
+<p>Instead of hardcoding API keys into <code class="language-plaintext highlighter-rouge">Info.plist</code> or <code class="language-plaintext highlighter-rouge">AppDelegate</code>, they can be hidden in many ways, so they are not available in your repo.</p>
+
+<p>Open the <code class="language-plaintext highlighter-rouge">xcconfig</code> files of your project.</p>
+
+<p><img src="../assets/img/my-vocabulary/xcconfig.png" width="400" /></p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.release.xcconfig
+MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.debug.xcconfig
+</code></pre></div></div>
+
+<p>Append <code class="language-plaintext highlighter-rouge">REVERSED_CLIENT_ID</code> and <code class="language-plaintext highlighter-rouge">CLIENT_ID</code> at the end of both files (the name of the variables can be modified).</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GOOGLE_SIGN_IN_REVERSED_CLIENT_ID=com.googleusercontent.apps.xxxxxxxxxxxxx
+GOOGLE_SIGN_IN_CLIENT_ID=xxxxxxxxxxxxx.apps.googleusercontent.com
+</code></pre></div></div>
+
+<p>You don’t want to upload this changes to your repo, so before doing <code class="language-plaintext highlighter-rouge">git add</code> of those files, you must indicate that changes in those files must not be taken into consideration.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git update-index --assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.debug.xcconfig
+git update-index --assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.release.xcconfig
+</code></pre></div></div>
+
+<p>Note: If later you want to make changes into <code class="language-plaintext highlighter-rouge">xcconfig</code> files and upload them into your repo, remember to revert this.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git update-index --no-assume-unchanged &lt;file&gt;
+</code></pre></div></div>
+
+<p>Now, the variables can be used in the <code class="language-plaintext highlighter-rouge">Info.plist</code> doing <code class="language-plaintext highlighter-rouge">$(GOOGLE_SIGN_IN_CLIENT_ID)</code> and <code class="language-plaintext highlighter-rouge">$(GOOGLE_SIGN_IN_REVERSED_CLIENT_ID)</code>. Please, when adding the new URLTypes, give them an unique identifier.</p>
+
+<p><img src="../assets/img/my-vocabulary/urltypes.png" width="400" /></p>
+
+<p>We are almost there… Remember that the client ID was needed in the <code class="language-plaintext highlighter-rouge">AppDelegate</code> to be setted into <code class="language-plaintext highlighter-rouge">GIDSignIn.sharedInstance().clientID</code>? I made an extension of <code class="language-plaintext highlighter-rouge">Bundle</code> that obtains URLType’s URL Schemes giving its identifier (see previous step).</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">extension</span> <span class="kt">Bundle</span> <span class="p">{</span>
+    <span class="kd">static</span> <span class="kd">func</span> <span class="nf">urlScheme</span><span class="p">(</span><span class="nv">urlTypeId</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">String</span><span class="p">?</span> <span class="p">{</span>
+        <span class="p">(((</span><span class="n">main</span><span class="o">.</span><span class="n">infoDictionary</span><span class="p">?[</span><span class="s">"CFBundleURLTypes"</span><span class="p">]</span> <span class="k">as?</span> <span class="p">[[</span><span class="kt">String</span><span class="p">:</span> <span class="kt">Any</span><span class="p">]])?</span>
+            <span class="o">.</span><span class="nf">first</span><span class="p">(</span><span class="nv">where</span><span class="p">:</span> <span class="p">{</span> <span class="nv">$0</span><span class="p">[</span><span class="s">"CFBundleURLName"</span><span class="p">]</span> <span class="k">as?</span> <span class="kt">String</span> <span class="o">==</span> <span class="n">urlTypeId</span><span class="p">}))?[</span><span class="s">"CFBundleURLSchemes"</span><span class="p">]</span> <span class="k">as?</span> <span class="p">[</span><span class="kt">String</span><span class="p">])?</span><span class="o">.</span><span class="n">first</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Instead of hardcoding the API key in the <code class="language-plaintext highlighter-rouge">AppDelegate</code>…</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">GIDSignIn</span><span class="o">.</span><span class="nf">sharedInstance</span><span class="p">()</span><span class="o">.</span><span class="n">clientID</span> <span class="o">=</span> <span class="kt">Bundle</span><span class="o">.</span><span class="nf">urlScheme</span><span class="p">(</span><span class="nv">urlTypeId</span><span class="p">:</span> <span class="s">"GOOGLE_SIGN_IN_CLIENT_ID"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="download-spreadsheets-from-google-drive">Download spreadsheets from Google Drive</h2>
+
+<p>Something must be added to the Google Sign In <a href="#appdelegate">configuration</a> in the App Delegate’s <code class="language-plaintext highlighter-rouge">didFinishLaunchingWithOptions</code> method, in order to request the user permissions for accessing Google Drive files.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">import</span> <span class="kt">GoogleAPIClientForREST</span>
+<span class="c1">// ...</span>
+<span class="kt">GIDSignIn</span><span class="o">.</span><span class="nf">sharedInstance</span><span class="p">()</span><span class="o">.</span><span class="n">scopes</span> <span class="o">=</span> <span class="p">[</span><span class="n">kGTLRAuthScopeDriveReadonly</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p><a href="https://developers.google.com/drive/api/v3/reference/files/list">Here</a> is the Google documentation for the request that is needed.</p>
+
+<p>A reference of the Google Drive service authorizer must be saved, add to the <code class="language-plaintext highlighter-rouge">GoogleSignInDelegate</code> a reference to the service.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="k">let</span> <span class="nv">googleDriveService</span> <span class="o">=</span> <span class="kt">GTLRDriveService</span><span class="p">()</span>
+</code></pre></div></div>
+<p>Then, in the implementation of <a href="#didsignin"><code class="language-plaintext highlighter-rouge">didSignIn</code></a>, save the authorizer.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">googleDriveService</span><span class="o">.</span><span class="n">authorizer</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">authentication</span><span class="o">.</span><span class="nf">fetcherAuthorizer</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="fetch-all-spreadsheets">Fetch all spreadsheets</h3>
+
+<p>A <code class="language-plaintext highlighter-rouge">GTLRDrive_FileList</code> will be downloaded using a Google Drive’s REST API query. This can also download files from Google Photos, for instance. In this case, only Drive files are needed, so the <code class="language-plaintext highlighter-rouge">spaces</code> and <code class="language-plaintext highlighter-rouge">corpora</code> properties must be setted.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">query</span> <span class="o">=</span> <span class="kt">GTLRDriveQuery_FilesList</span><span class="o">.</span><span class="nf">query</span><span class="p">()</span>
+<span class="n">query</span><span class="o">.</span><span class="n">spaces</span> <span class="o">=</span> <span class="s">"drive"</span>
+<span class="n">query</span><span class="o">.</span><span class="n">corpora</span> <span class="o">=</span> <span class="s">"user"</span>
+</code></pre></div></div>
+<p><img src="../assets/img/my-vocabulary/corpora.png" width="400" /></p>
+
+<p><img src="../assets/img/my-vocabulary/spaces.png" width="400" /></p>
+
+<p>By default, not all the fields of the <code class="language-plaintext highlighter-rouge">GTLRDrive_File</code> are fetched, indicate which ones must be requested.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">query</span><span class="o">.</span><span class="n">fields</span> <span class="o">=</span> <span class="s">"files(id,name,modifiedTime,size)"</span>
+</code></pre></div></div>
+<p>Also, tell the query to look only for spreadsheets.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">spreadsheetOnly</span> <span class="o">=</span> <span class="s">"mimeType = 'application/vnd.google-apps.spreadsheet'"</span>
+<span class="n">query</span><span class="o">.</span><span class="n">q</span> <span class="o">=</span> <span class="s">"</span><span class="se">\(</span><span class="n">spreadsheetOnly</span><span class="se">)</span><span class="s">"</span>
+</code></pre></div></div>
+<p>Then, just execute the query and wait for the result, a <code class="language-plaintext highlighter-rouge">GTLRDrive_FileList</code>.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">googleDriveService</span><span class="o">.</span><span class="nf">executeQuery</span><span class="p">(</span><span class="n">query</span><span class="p">)</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="k">self</span><span class="p">]</span> <span class="n">_</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">error</span> <span class="k">in</span>
+    <span class="k">guard</span> <span class="n">error</span> <span class="o">==</span> <span class="kc">nil</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+    <span class="k">for</span> <span class="n">file</span> <span class="nf">in</span> <span class="p">(</span><span class="n">result</span> <span class="k">as?</span> <span class="kt">GTLRDrive_FileList</span><span class="p">)?</span><span class="o">.</span><span class="n">files</span> <span class="p">??</span> <span class="p">[]</span> <span class="p">{</span>
+        <span class="c1">// ...</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>This query will return all the spreadsheets linked with that account, even those that are shared with other users or those that are in the Trash. Filters can be added, for instace, to fetch only files owned by the user and not other user’s shared files.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">ownedByUser</span> <span class="o">=</span> <span class="s">"'</span><span class="se">\(</span><span class="n">email</span><span class="se">)</span><span class="s">' in owners"</span>
+<span class="n">query</span><span class="o">.</span><span class="n">q</span> <span class="o">=</span> <span class="s">"</span><span class="se">\(</span><span class="n">spreadsheetOnly</span><span class="se">)</span><span class="s"> and </span><span class="se">\(</span><span class="n">ownedByUser</span><span class="se">)</span><span class="s">"</span>
+</code></pre></div></div>
+<h3 id="fetch-the-content-of-each-spreadsheet">Fetch the content of each spreadsheet</h3>
+
+<p>The previous query only fetched info about the files, to get the whole file, other request must be made with the Google Drive service fetcher.</p>
+
+<p>The ID of each spreadsheet must be included in the URL, in following example, replace the %@ with it.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="kd">func</span> <span class="nf">spreadsheetUrl</span><span class="p">(</span><span class="nv">id</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">URL</span><span class="p">?</span> <span class="p">{</span>
+    <span class="kt">URL</span><span class="p">(</span><span class="nv">string</span><span class="p">:</span> <span class="kt">String</span><span class="p">(</span><span class="nv">format</span><span class="p">:</span> <span class="s">"https://www.googleapis.com/drive/v3/files/%@/export?alt=media&amp;mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"</span><span class="p">,</span> <span class="n">id</span><span class="p">))</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>Use the URL to fetch the resource with Google Service.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">googleDriveService</span><span class="o">.</span><span class="n">fetcherService</span><span class="o">.</span><span class="nf">fetcher</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">beginFetch</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="k">self</span><span class="p">]</span> <span class="n">data</span><span class="p">,</span> <span class="n">error</span> <span class="k">in</span>
+    <span class="k">guard</span> <span class="n">error</span> <span class="o">==</span> <span class="kc">nil</span><span class="p">,</span> <span class="k">let</span> <span class="nv">data</span> <span class="o">=</span> <span class="n">data</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+    <span class="c1">// Handle the data</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="parse-spreadsheets-translations">Parse spreadsheet’s translations</h2>
+
+<p>This is not as straightforward as fetching the data, to do this, there are libraries like <a href="https://github.com/CoreOffice/CoreXLSX">CoreXLSX</a>.</p>
+
+<p>Adding it to your project is very simple with CocoaPods.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>platform :ios, '14.0'
+
+target 'MyVocabulary' do
+  use_frameworks!
+  # ...
+  pod 'CoreXLSX'
+end
+</code></pre></div></div>
+
+<h3 id="️-important">♦️ Important</h3>
+
+<p>Before doing <code class="language-plaintext highlighter-rouge">pod install</code>, mark the <code class="language-plaintext highlighter-rouge">xcconfig</code> files as <strong>no-assume-unchanged</strong>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git update-index --no-assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.release.xcconfig
+git update-index --no-assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.debug.xcconfig
+</code></pre></div></div>
+
+<p>Then, install the new pod and you’ll see that there are changes in that 2 files, check the files before uploading the changes (if you don’t want to upload your API keys) and then upload them.</p>
+
+<p>Now, the keys can be added again to the <code class="language-plaintext highlighter-rouge">xcconfig</code> files and the files must be marked again as <strong>assume-unchanged</strong>.</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git update-index --assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.debug.xcconfig
+git update-index --assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.release.xcconfig
+</code></pre></div></div>
+
+<h3 id="️">♦️</h3>
+
+<p>Once installed the framework, here is how the rows of the spreadsheet can be accessed. Each row is an array of cells, this operation can throw several kind of errors that must be handled.</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">import</span> <span class="kt">CoreXLSX</span>
+<span class="c1">// ...</span>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">file</span> <span class="o">=</span> <span class="k">try</span> <span class="kt">XLSXFile</span><span class="p">(</span><span class="nv">data</span><span class="p">:</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">sharedStrings</span> <span class="o">=</span> <span class="k">try</span> <span class="n">file</span><span class="o">.</span><span class="nf">parseSharedStrings</span><span class="p">()</span> <span class="k">else</span> <span class="p">{</span> <span class="k">return</span> <span class="p">}</span>
+    <span class="k">let</span> <span class="nv">workbooks</span> <span class="o">=</span> <span class="k">try</span> <span class="n">file</span><span class="o">.</span><span class="nf">parseWorkbooks</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">workbook</span> <span class="k">in</span> <span class="n">workbooks</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">pathsAndNames</span> <span class="o">=</span> <span class="k">try</span> <span class="n">file</span><span class="o">.</span><span class="nf">parseWorksheetPathsAndNames</span><span class="p">(</span><span class="nv">workbook</span><span class="p">:</span> <span class="n">workbook</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span> <span class="k">in</span> <span class="n">pathsAndNames</span> <span class="p">{</span>
+            <span class="k">let</span> <span class="nv">worksheet</span> <span class="o">=</span> <span class="k">try</span> <span class="n">file</span><span class="o">.</span><span class="nf">parseWorksheet</span><span class="p">(</span><span class="nv">at</span><span class="p">:</span> <span class="n">path</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="k">in</span> <span class="n">worksheet</span><span class="o">.</span><span class="n">data</span><span class="p">?</span><span class="o">.</span><span class="n">rows</span> <span class="p">??</span> <span class="p">[]</span> <span class="p">{</span>
+                <span class="k">let</span> <span class="nv">originLanguage</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">let</span> <span class="nv">aimLanguage</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">let</span> <span class="nv">originalText</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">let</span> <span class="nv">resultText</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="c1">// ...</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>And that’s it! With this, you can read a spreadsheet from your Google Drive and use the data in your app.</p>
+
+<p><strong>To be continued…</strong></p>
+:ET
