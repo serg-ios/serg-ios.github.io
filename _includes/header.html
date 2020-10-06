@@ -35,20 +35,7 @@
             {% else %}
               <h2 class="{{ include.type }}-subheading">{{ page.subtitle }}</h2>
             {% endif %}
-          {% endif %}
-
-          {% if include.type == "post" %}
-            <span class="post-meta">Posted on {{ page.date | date: date_format }}</span>
-            {% if page.last-updated %}
-              <span class="post-meta">
-                <span class="d-none d-md-inline middot">&middot;</span>
-                Last updated {{ page.last-updated | date: date_format }}
-              </span>
-            {% endif %}
-            {% if page.readtime %}
-              {% include readtime.html %}
-            {% endif %}
-          {% endif %}
+          {% endif %}        
         </div>
       </div>
     </div>
@@ -68,19 +55,6 @@
               <span class="{{ include.type }}-subheading">{{ page.subtitle }}</span>
             {% else %}
               <h2 class="{{ include.type }}-subheading">{{ page.subtitle }}</h2>
-            {% endif %}
-          {% endif %}
-
-          {% if include.type == "post" %}
-            <span class="post-meta">Posted on {{ page.date | date: date_format }}</span>
-            {% if page.last-updated %}
-              <span class="post-meta">
-                <span class="d-none d-md-inline middot">&middot;</span>
-                Last updated {{ page.last-updated | date: date_format }}
-              </span>
-            {% endif %}
-            {% if page.readtime %}
-              {% include readtime.html %}
             {% endif %}
           {% endif %}
         </div>
