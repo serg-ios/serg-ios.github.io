@@ -6,6 +6,7 @@ gh-repo: serg-ios/my-vocabulary
 gh-badge: [star, fork, follow]
 tags: [iOS, Swift, Google Drive, Google Sign In, Google Translate, XLSX]
 comments: true
+thumbnail-img: /assets/img/my-vocabulary/myvocabulary-thumbnail.png
 ---
 
 When I am reading a book in a foreign language, I use Google Translate to translate those words that I don't understand...
@@ -348,7 +349,7 @@ GIDSignIn.sharedInstance().clientID = Bundle.urlScheme(urlTypeId: "GOOGLE_SIGN_I
 
 ## Download spreadsheets from Google Drive
 
-Something must be added to the Google Sign In [configuration](#appdelegate) in the App Delegate's `didFinishLaunchingWithOptions` method, in order to request the user permissions for accessing Google Drive files.
+An **scope** must be added to the Google Sign In [configuration](#appdelegate) in the App Delegate's `didFinishLaunchingWithOptions` method, in order to request the user permissions for accessing Google Drive files.
 
 ```swift
 import GoogleAPIClientForREST
@@ -356,7 +357,7 @@ import GoogleAPIClientForREST
 GIDSignIn.sharedInstance().scopes = [kGTLRAuthScopeDriveReadonly]
 ```
 
-[Here](https://developers.google.com/drive/api/v3/reference/files/list) is the Google documentation for the request that is needed.
+[Here](https://developers.google.com/drive/api/v3/reference/files/list) is the Google documentation for the Google Drive API requests that are needed.
 
 A reference of the Google Drive service authorizer must be saved, add to the `GoogleSignInDelegate` a reference to the service.
 ```swift
@@ -437,7 +438,7 @@ end
 
 ### ♦️ Important
 
-Before doing `pod install`, mark the `xcconfig` files as **no-assume-unchanged**.
+Before doing `pod install`,mark the `xcconfig` files as **no-assume-unchanged**.
 ```
 git update-index --no-assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.release.xcconfig
 git update-index --no-assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.debug.xcconfig
@@ -451,9 +452,11 @@ git update-index --assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pod
 git update-index --assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.release.xcconfig
 ```
 
+To avoid uploading API Keys to your repo, do this every time you want to add a new library via CocoaPods.
+
 ### ♦️
 
-Once installed the framework, here is how the rows of the spreadsheet can be accessed. Each row is an array of cells, this operation can throw several kind of errors that must be handled.
+Once installed the framework, here is how the rows of the spreadsheet can be accessed. Each row is an array of cells, this operation can throw several kind of errors that can be handled.
 ```swift
 import CoreXLSX
 // ...

@@ -16,6 +16,7 @@ author: Sergio Rodríguez Rama
 navbar-links:
   # About Me: "aboutme"
   My projects:
+    - My Vocabulary: "/2021-03-06-my-vocabulary/"
     - iOS Ambibox: "/2020-10-15-ambibox-control/"
     - WalkArea: "/2020-10-14-walkarea/"
     - WordSeARch: "/2020-10-07-wordsearch/"
