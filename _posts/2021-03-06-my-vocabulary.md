@@ -6,7 +6,7 @@ gh-repo: serg-ios/my-vocabulary
 gh-badge: [star, fork, follow]
 tags: [iOS, Swift, Google Drive, Google Sign In, Google Translate, XLSX]
 comments: true
-thumbnail-img: /assets/img/my-vocabulary/myvocabulary-thumbnail.png
+thumbnail-img: /assets/img/my-vocabulary/myvocabulary-thumbnail.jpg
 ---
 
 When I am reading a book in a foreign language, I use Google Translate to translate those words that I don't understand...
@@ -23,6 +23,8 @@ When I am reading a book in a foreign language, I use Google Translate to transl
 8. [Download spreadsheets from Google Drive](#download-spreadsheets-from-google-drive)
 9. [Parse spreadsheet's translations](#parse-spreadsheets-translations)
 10. [MVVM in SwiftUI](#mvvm-in-swiftui)
+11. [Core Data in background](#core-data-in-background)
+12. [Background and concurrent tasks in SwiftUI](#background-and-concurrent-tasks-in-swiftui)
 
 ## Introduction
 
@@ -633,5 +635,208 @@ struct SpreadsheetView: View {
 ```
 Every time the translations are updated, each spreadsheet checks if its translations have been imported. If this is the case, the status of the spreadsheet's view becomes `imported`.
 
+## Core Data in background
+
+Saving just one or two items in Core Data is trivial, but when we need to store thousands of elements, the app can get stuck while all this items are added.
+
+### Why must run in background?
+
+```swift
+for translation in spreadsheet.translations {
+    guard self?.hasBeenImported(translation, in: translations) == true else { continue }
+    let newTranslation = Translation(context: context)
+    newTranslation.from = translation.from
+    newTranslation.to = translation.to
+    newTranslation.input = translation.input
+    newTranslation.output = translation.output
+}
+```
+
+This code works great for adding a few translations, but...
+
+1. What would happen in the example above if the spreadsheet has 10.000 translations?
+2. The `hasBeenImported` guard, verifies that the translation that is going to be added hasn't been added already. What happens when 20.000 translations have already been added?
+
+### How to add thousands of items in background?
+
+Running that code directly in the background using `DispatchQueue.global(qos: .background).async { /* ...*/ }` doesn't work for Core Data, to store the translations `performBackgroundTask` must be called on the `NSPersistentCloudKitContainer` to generate a new `NSManagedObjectContext` that will be able to perform background tasks.
+
+```swift
+func importTranslations(from spreadsheet: Spreadsheet, alreadyImported translations: [Translation]) {
+    dataController.container.viewContext.automaticallyMergesChangesFromParent = true
+    dataController.container.performBackgroundTask { [weak self] context in
+    for translation in spreadsheet.translations {
+        guard self?.hasBeenImported(translation, in: translations) == true else { continue }
+        let newTranslation = Translation(context: context)
+        newTranslation.from = translation.from
+        newTranslation.to = translation.to
+        newTranslation.input = translation.input
+        newTranslation.output = translation.output
+    }
+    try? context.save()
+}
+```
+
+There are 2 important lines in the code above:
+
+1. Setting `dataController.container.viewContext.automaticallyMergesChangesFromParent = true`, the main context of the container (`viewContext`) will receive the changes immediately, even if the items are being written in other context.
+
+2. The changes must be saved, but in the new context, with `try? context.save()`.
+
+In other parts of the app, the translations are being fetched and the `NSFetchedResultsControllerDelegate` must respond to content changes.
+
+```swift
+extension ContentView {
+    class ViewModel: NSObject, ObservableObject {
+
+        @Published var translations: [Translation] = []
+
+        let dataController: DataController
+        private var translationsController: NSFetchedResultsController<Translation>
+
+        init(dataController: DataController) {
+            self.dataController = dataController
+            let request: NSFetchRequest<Translation> = Translation.fetchRequest()
+            request.sortDescriptors = []
+            translationsController = NSFetchedResultsController(
+                fetchRequest: request,
+                managedObjectContext: dataController.container.viewContext,
+                sectionNameKeyPath: nil,
+                cacheName: nil
+            )
+            super.init()
+            translationsController.delegate = self
+            try? translationsController.performFetch()
+            translations = translationsController.fetchedObjects ?? []
+        }
+
+    }
+}
+
+// MARK: - NSFetchedResultsControllerDelegate methods
+
+extension ContentView.ViewModel: NSFetchedResultsControllerDelegate {
+    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        if let newTranslations = controller.fetchedObjects as? [Translation] {
+            translations = newTranslations
+        }
+    }
+}
+```
+
+As the fetched translations are `@Published`, all the views that would like to update responsively to changes in translations, must bind and observe them with `onChange`.
+
+```swift
+struct SpreadsheetView: View {
+
+    @Binding private var translations: [Translation]
+    
+    var body: some View {
+        VStack {
+            // ...
+        }
+        .onChange(of: translations) { newTranslations in
+            viewModel.checkIfImported(translations: newTranslations)
+        }
+    }
+}
+```
+
+## Background and concurrent tasks in SwiftUI
+
+For other kind of background tasks in SwiftUI, for which the view must be updated after the task finishes. A `@State` or `@Published` property can be modified when the task is completed, but it is very important to do this in the main thread, because everything that causes a UI update must be run in the main thread.
+
+```swift
+extension SpreadsheetView {
+    class ViewModel: NSObject, ObservableObject {
+
+        enum Status {
+            case loading
+            case importable
+            case imported
+        }
+
+        @Published var status: Status = .loading
+
+        func checkIfImported(translations: [Translation]) {
+            DispatchQueue.global(qos: .background).async { [weak self] in
+                for translation in self?.spreadsheet.translations ?? [] {
+                    if !translations.contains(where: { $0.id == translation.id }) {
+                        DispatchQueue.main.async { [weak self] in
+                            self?.status = .importable // Will make the UI react, do it in main thread.
+                        }
+                        return
+                    }
+                }
+                DispatchQueue.main.async { [weak self] in
+                    self?.status = .imported // Will make the UI react, do it in main thread.
+                }
+            }
+        }
+    }
+}
+```
+
+### Parsing spreadsheets concurrently
+
+Parsing spreadsheets is a very demanding task that can take several seconds to complete, it is a good idea to parse all the spreadsheets concurrently to save some time.
+
+```swift
+func fetchAllSpreadsheets(completion: @escaping () -> ()) {
+    // ...
+    for file in (result as? GTLRDrive_FileList)?.files ?? [] {
+        if let id = file.identifier, let name = file.name {
+            self?.dispatchGroup.enter()
+            print("Start fetching & parsing spreadsheet \(id)")
+            self?.fetchSpreadsheet(id: id, name: name)
+        }
+    }
+    self?.dispatchGroup.notify(queue: .main) { [weak self] in
+        self?.spreadsheetsResult = .success(self?.spreadsheets ?? [])
+        completion()
+    }
+}
+
+func fetchSpreadsheet(id: String, name: String) {
+    guard let url = spreadsheetUrl(id: id) else {
+        dispatchGroup.leave()
+        return
+    }
+    // Fetches and parses the content of each spreadsheet, given its ID.
+    googleDriveService.fetcherService.fetcher(with: url).beginFetch { [weak self] data, error in
+        guard error == nil, let data = data else {
+            self?.dispatchGroup.leave()
+            return
+        }
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            self?.generateSpreadsheet(from: data, id: id, name: name)
+            self?.dispatchGroup.leave()
+            print("Finish fetching & parsing spreadsheet \(id)")
+        }
+    }
+}
+```
+
+#### DispatchGroup
+
+Using `DispatchGroup` is a great choice because it is very easy to use. By calling `dispatchGroup.enter()` before every demanding task starts and `dispatchGroup.leave()` when it ends, when all the `dispatchGroup.leave()`'s have been called, the `self?.dispatchGroup.notify(queue: .main) { /* ... */ }` is executed.
+
+Remember, if UI is going to be updated by the `notify` closure, it must run in the main thread.
+
+In the code above, some `print` were added to see that the concurrent tasks may end in a different order to one in which they started.
+
+```
+Start fetching & parsing spreadsheet 1n4nY49aEwCGocULrdMWrhFr1JjKX5hxFjEssHKoEgIQ
+Start fetching & parsing spreadsheet 1c6PcEbF65JgM_SU3rGxLe2Y1um_e7c5hNVIMZJ624S4
+Start fetching & parsing spreadsheet 1zUDkpLmfgDUH4OfEferFQWT0R97HsX85ZKN8T0KibJg
+Start fetching & parsing spreadsheet 11CWqCmMTK_Gy5ssT5ibZjkAirhkNeUZAH5sDshBqfFc
+
+Finish fetching & parsing spreadsheet 1zUDkpLmfgDUH4OfEferFQWT0R97HsX85ZKN8T0KibJg
+Finish fetching & parsing spreadsheet 11CWqCmMTK_Gy5ssT5ibZjkAirhkNeUZAH5sDshBqfFc
+Finish fetching & parsing spreadsheet 1n4nY49aEwCGocULrdMWrhFr1JjKX5hxFjEssHKoEgIQ
+Finish fetching & parsing spreadsheet 1c6PcEbF65JgM_SU3rGxLe2Y1um_e7c5hNVIMZJ624S4
+```
+
+<img src="../assets/img/my-vocabulary/concurrency/status_spreadsheets.jpg" width="280">
 
 **To be continued...**
