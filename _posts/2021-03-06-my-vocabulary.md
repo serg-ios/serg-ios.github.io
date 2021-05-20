@@ -25,6 +25,7 @@ When I am reading a book in a foreign language, I use Google Translate to transl
 10. [MVVM in SwiftUI](#mvvm-in-swiftui)
 11. [Core Data in background](#core-data-in-background)
 12. [Background and concurrent tasks in SwiftUI](#background-and-concurrent-tasks-in-swiftui)
+13. [Accessibility - Dynamic Type](#accessibility)
 
 ## Introduction
 
@@ -838,5 +839,41 @@ Finish fetching & parsing spreadsheet 1c6PcEbF65JgM_SU3rGxLe2Y1um_e7c5hNVIMZJ624
 ```
 
 <img src="../assets/img/my-vocabulary/concurrency/status_spreadsheets.jpg" width="280">
+
+## Accessibility
+
+It´s very important to make the app usable to everybody, a voice can describe whatever happens in the screen, vibrations (haptics) can give information about an action, different text sizes can be supported...
+
+### Dynamic Type
+
+Some people needs bigger fonts to be able to read the texts in the screen, there are a lot of apps out there that don't support the **Dynamic Type** feature.
+
+For texts in SwiftUI, the simplest way of doing it, is applying the view modifier `font` with any of the default fonts:
+
+```swift
+// ...
+.font(.title2)
+.font(.title3)
+.font(.footnote)
+.font(.largeTitle)
+// ...
+```
+
+These are the ones I used, but there are many [more](https://developer.apple.com/documentation/swiftui/font).
+
+<img src="../assets/img/my-vocabulary/accessibility/dynamic_types.gif" width="280">
+
+When the font increases its size, some texts need more than one line to be represented, to limit the number of lines, use the view modifier `.lineLimit(1)`.
+
+For those texts that must not be truncated, `.minimumScaleFactor(0.1)` can be used, so the font size scales accordingly to the factor if it doesn't fit in the available space.
+
+But dynamic sizes don't apply exclusively to texts, images and other views can become bigger too, according to the user settings:
+
+- By giving them a fixed size, they won't grow nor shrink. 
+- By using a minimum size and no maximum, for example, views can grow indefinitely and shrink down to a limit, just use the view modifier `.frame(minWidth: 44, minHeight: 44)`.
+
+<img src="../assets/img/my-vocabulary/accessibility/xcode_dynamic_types.gif" width="280">
+
+The size of the texts and views can be changed in runtime from Xcode.
 
 **To be continued...**
