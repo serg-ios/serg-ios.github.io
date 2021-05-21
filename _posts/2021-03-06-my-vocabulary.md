@@ -1,7 +1,7 @@
 ---
 layout: post
 title: My Vocabulary iOS app
-subtitle: App to learn your favourite translations from Google Translate
+subtitle: App to learn your favorite translations from Google Translate
 gh-repo: serg-ios/my-vocabulary
 gh-badge: [star, fork, follow]
 tags: [iOS, Swift, Google Drive, Google Sign In, Google Translate, XLSX]
@@ -26,14 +26,15 @@ When I am reading a book in a foreign language, I use Google Translate to transl
 11. [Core Data in background](#core-data-in-background)
 12. [Background and concurrent tasks in SwiftUI](#background-and-concurrent-tasks-in-swiftui)
 13. [Accessibility - Dynamic Type](#accessibility)
+13. [Accessibility - VoiceOver](#voiceover)
 
 ## Introduction
 
-If I want to save some words, I mark them as favourites, pressing the star button for each word.
+If I want to save some words, I mark them as favorites, pressing the star button for each word.
 
 <img src="../assets/img/my-vocabulary/google-cloud/google-translate.png" width="250">
 
-This is very useful because if I go to [https://translate.google.es/](https://translate.google.es/), I sign in with the same account and I can export that words into a XLSX file.
+This is very useful because if I go to [https://translate.google.es/](https://translate.google.es/), I sign in with the same account and I can export that words into an XLSX file.
 
 <img src="../assets/img/my-vocabulary/create-excel.png" width="250"> <img src="../assets/img/my-vocabulary/drive-file.png" width="258">
 
@@ -49,7 +50,7 @@ I created an empty SwiftUI project with UIKit App Delegate life cycle.
 
 Then, I added `GoogleSignIn` and `GoogleAPIClientForREST/Drive` libraries to it, using CocoaPods.
 
-To add CocoaPods to a project, run `pod init` in its main directory. If you don't have `pod` installed in your computer, check [this](https://cocoapods.org/).
+To add CocoaPods to a project, run `pod init` in its main directory. If you don't have `pod` installed on your computer, check [this](https://cocoapods.org/).
 
 ```
 🙈 ~/Desktop/my-vocabulary/MyVocabulary$pod init
@@ -72,7 +73,7 @@ target 'MyVocabulary' do
 end
 ```
 
-These libraries are necessary because I will need to authenticate myself in order to access my Google Drive files.
+These libraries are necessary because I will need to authenticate myself to access my Google Drive files.
 
 Finish and run `pod install`.
 
@@ -99,9 +100,9 @@ Once you've installed CocoaPods, close your project, open Xcode again and select
 
 ## Google Cloud Platform
 
-The first thing that must be done is authentication with Google credentials in order to access Google Drive.
+The first thing that must be done is authentication with Google credentials to access Google Drive.
 
-It's necessary an Google API Key .
+It's necessary a Google API Key.
 
 1. Visit your Google Cloud Platform [dashboard](https://console.cloud.google.com/projectselector2/home/dashboard) and create a project.
 2. Give a name to it.
@@ -149,14 +150,14 @@ You should add two **Url Types**, one with the value of the `CLIENT_ID` as URL S
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CLIENT_ID</key>
-	<string>xxxxxxxxxxxxx.apps.googleusercontent.com</string>
-	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.xxxxxxxxxxxxx</string>
-	<key>PLIST_VERSION</key>
-	<string>1</string>
-	<key>BUNDLE_ID</key>
-	<string>com.serg-ios.MyVocabulary</string>
+    <key>CLIENT_ID</key>
+    <string>xxxxxxxxxxxxx.apps.googleusercontent.com</string>
+    <key>REVERSED_CLIENT_ID</key>
+    <string>com.googleusercontent.apps.xxxxxxxxxxxxx</string>
+    <key>PLIST_VERSION</key>
+    <string>1</string>
+    <key>BUNDLE_ID</key>
+    <string>com.serg-ios.MyVocabulary</string>
 </dict>
 </plist>
 ```
@@ -181,7 +182,7 @@ class GoogleSignInDelegate: NSObject, GIDSignInDelegate, ObservableObject {
 }
 ```
 
-<a name="appdelegate">The singleton that handles the sign in process needs the `clientID` property and its delegate to be setted, this must be done in the `didFinishLaunchingWithOptions` method of out `AppDelegate`.</a>
+<a name="appdelegate">The singleton that handles the sign-in process needs the `clientID` property and its delegate to be setted, this must be done in the `didFinishLaunchingWithOptions` method of out `AppDelegate`.</a>
 
 ```swift
 @main
@@ -246,14 +247,14 @@ struct ContentView: View {
 }
 ```
 
-Now run the project, press the button that appears in the top of the screen and you'll see an error.
+Now run the project, press the button that appears at the top of the screen and you'll see an error.
 
 ```
 Terminating app due to uncaught exception 'NSInvalidArgumentException', 
 reason: 'presentingViewController must be set.'
 ```
 
-The Google Sign In singleton has a property `presentingViewController` that must refer the view controller that will present the sign in screen. To fix this, some changes must be done in our `SceneDelegate`.
+The Google Sign In singleton has the property `presentingViewController` that must refer to the view controller that will present the sign-in screen. To fix this, some changes must be done in our `SceneDelegate`.
 
 ```swift
 import UIKit
@@ -281,7 +282,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 ```
 
-Run the project, press the button again and select an account that you included in the list "test emails" during the Google Cloud Platform configuration.
+Run the project, press the button again, and select an account that you included in the list "test emails" during the Google Cloud Platform configuration.
 
 <img src="../assets/img/my-vocabulary/login.png" width="250"> <img src="../assets/img/my-vocabulary/select-account.png" width="250">
 
@@ -293,11 +294,11 @@ Google Sign In - success
 
 Hurray!! 🎉 🥳 🎊 
 
-You have implemented the simplest sign in with Google, no handling errors, no keeping session open after closing the app... But this will come later.
+You have implemented the simplest sign-in with Google, no handling errors, no keeping session open after closing the app... But this will come later.
 
 ## Don't upload API Keys to Git
 
-If you have a public repository you might want to hide your Google Sign In Client ID.
+If you have a public repository you might want to hide your Google Sign-In Client ID.
 
 Instead of hardcoding API keys into `Info.plist` or `AppDelegate`, they can be hidden in many ways, so they are not available in your repo.
 
@@ -317,7 +318,7 @@ GOOGLE_SIGN_IN_REVERSED_CLIENT_ID=com.googleusercontent.apps.xxxxxxxxxxxxx
 GOOGLE_SIGN_IN_CLIENT_ID=xxxxxxxxxxxxx.apps.googleusercontent.com
 ```
 
-You don't want to upload this changes to your repo, so before doing `git add` of those files, you must indicate that changes in those files must not be taken into consideration.
+You don't want to upload these changes to your repo, so before doing `git add` of those files, you must indicate that changes in those files must not be taken into consideration.
 
 ```
 git update-index --assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.debug.xcconfig
@@ -334,7 +335,7 @@ Now, the variables can be used in the `Info.plist` doing `$(GOOGLE_SIGN_IN_CLIEN
 
 <img src="../assets/img/my-vocabulary/urltypes.png" width="400">
 
-We are almost there... Remember that the client ID was needed in the `AppDelegate` to be setted into `GIDSignIn.sharedInstance().clientID`? I made an extension of `Bundle` that obtains URLType's URL Schemes giving its identifier (see previous step).
+We are almost there... Remember that the client ID was needed in the `AppDelegate` to be setted into `GIDSignIn.sharedInstance().clientID`? I made an extension of `Bundle` that obtains URLType's URL Schemes giving its identifier (see the previous step).
 
 ```swift
 extension Bundle {
@@ -353,7 +354,7 @@ GIDSignIn.sharedInstance().clientID = Bundle.urlScheme(urlTypeId: "GOOGLE_SIGN_I
 
 ## Download spreadsheets from Google Drive
 
-An **scope** must be added to the Google Sign In [configuration](#appdelegate) in the App Delegate's `didFinishLaunchingWithOptions` method, in order to request the user permissions for accessing Google Drive files.
+A **scope** must be added to the Google Sign In [configuration](#appdelegate) in the App Delegate's `didFinishLaunchingWithOptions` method, to request the user permissions for accessing Google Drive files.
 
 ```swift
 import GoogleAPIClientForREST
@@ -374,7 +375,7 @@ googleDriveService.authorizer = user.authentication.fetcherAuthorizer()
 
 ### Fetch all spreadsheets
 
-A `GTLRDrive_FileList` will be downloaded using a Google Drive's REST API query. This can also download files from Google Photos, for instance. In this case, only Drive files are needed, so the `spaces` and `corpora` properties must be setted.
+A `GTLRDrive_FileList` will be downloaded using Google Drive's REST API query. This can also download files from Google Photos, for instance. In this case, only Drive files are needed, so the `spaces` and `corpora` properties must be set.
 ```swift
 let query = GTLRDriveQuery_FilesList.query()
 query.spaces = "drive"
@@ -402,14 +403,14 @@ googleDriveService.executeQuery(query) { [weak self] _, result, error in
     }
 }
 ```
-This query will return all the spreadsheets linked with that account, even those that are shared with other users or those that are in the Trash. Filters can be added, for instace, to fetch only files owned by the user and not other user's shared files.
+This query will return all the spreadsheets linked with that account, even those that are shared with other users or those that are in the Trash. Filters can be added, for instance, to fetch only files owned by the user and not other user's shared files.
 ```swift
 let ownedByUser = "'\(email)' in owners"
 query.q = "\(spreadsheetOnly) and \(ownedByUser)"
 ```
 ### Fetch the content of each spreadsheet
 
-The previous query only fetched info about the files, to get the whole file, other request must be made with the Google Drive service fetcher.
+The previous query only fetched info about the files, to get the whole file, other requests must be made with the Google Drive service fetcher.
 
 The ID of each spreadsheet must be included in the URL, in following example, replace the %@ with it.
 ```swift
@@ -442,7 +443,7 @@ end
 
 ### ♦️ Important
 
-Before doing `pod install`,mark the `xcconfig` files as **no-assume-unchanged**.
+Before doing `pod install`, mark the `xcconfig` files as **no-assume-unchanged**.
 ```
 git update-index --no-assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.release.xcconfig
 git update-index --no-assume-unchanged MyVocabulary/Pods/Target\ Support\ Files/Pods-MyVocabulary/Pods-MyVocabulary.debug.xcconfig
@@ -460,7 +461,7 @@ To avoid uploading API Keys to your repo, do this every time you want to add a n
 
 ### ♦️
 
-Once installed the framework, here is how the rows of the spreadsheet can be accessed. Each row is an array of cells, this operation can throw several kind of errors that can be handled.
+Once installed the framework, here is how the rows of the spreadsheet can be accessed. Each row is an array of cells, this operation can throw several kinds of errors that can be handled.
 ```swift
 import CoreXLSX
 // ...
@@ -490,11 +491,11 @@ And that's it! With this, you can read a spreadsheet from your Google Drive and 
 
 ## MVVM in SwiftUI
 
-In order to isolate the business logic from view, this is an useful pattern. The view will be reactive to an observable status in the view model.
+To isolate the business logic from view, this is a useful pattern. The view will be reactive to an observable status in the view model.
 
 ### Import spreadsheets
 
-The main view will contain the list of spreadsheets and the sign in / out buttons. Each spreadsheet is represented by another view, that contains information of the spreadsheet and a button to import all the words from it.
+The main view will contain the list of spreadsheets and the sign-in / out buttons. Each spreadsheet is represented by another view, that contains information about the spreadsheet and a button to import all the words from it.
 
 <img src="../assets/img/my-vocabulary/viewmodel/signed_out.jpg" width="250">
 <img src="../assets/img/my-vocabulary/viewmodel/loading.jpg" width="250">
@@ -530,7 +531,7 @@ extension ImportView {
     }
 }
 ```
-To use the use the view model from the view:
+To use the view model from the view:
 ```swift
 struct ImportView: View {
 
@@ -556,9 +557,9 @@ var body: some View {
         if case .loading = viewModel.status {
             // ...
         } else if case .loaded(let spreadsheets) = viewModel.status {
-        	// ...
+            // ...
         } else {
-        	// ...
+            // ...
         }
     }
 }
@@ -566,13 +567,13 @@ var body: some View {
 
 #### Bindings
 
-After importing the words in a spreadsheet into the app, the fetched translations will be updated and each spreadsheet must indicate if its translations can be imported or if it have already been imported.
+After importing the words in a spreadsheet into the app, the fetched translations will be updated and each spreadsheet must indicate if its translations can be imported or if they have already been imported.
 
 From the main view model, all the imported translations are fetched:
 ```swift
 class ViewModel: NSObject, ObservableObject {
 
-	// ...
+    // ...
 
     private let dataController: DataController
     private let translationsController: NSFetchedResultsController<Translation>
@@ -621,7 +622,7 @@ ForEach(spreadsheets, id: \.id) { spreadsheet in
     .padding()
 }
 ```
-To update the spreadsheet's view reactively with translation's changes, the published value must be binded:
+To update the spreadsheet's view reactively with translation's changes, the published value must be bound:
 ```swift
 struct SpreadsheetView: View {
 
@@ -638,7 +639,7 @@ Every time the translations are updated, each spreadsheet checks if its translat
 
 ## Core Data in background
 
-Saving just one or two items in Core Data is trivial, but when we need to store thousands of elements, the app can get stuck while all this items are added.
+Saving just one or two items in Core Data is trivial, but when we need to store thousands of elements, the app can get stuck while all these items are added.
 
 ### Why must run in background?
 
@@ -745,7 +746,7 @@ struct SpreadsheetView: View {
 
 ## Background and concurrent tasks in SwiftUI
 
-For other kind of background tasks in SwiftUI, for which the view must be updated after the task finishes. A `@State` or `@Published` property can be modified when the task is completed, but it is very important to do this in the main thread, because everything that causes a UI update must be run in the main thread.
+For other kinds of background tasks in SwiftUI, for which the view must be updated after the task finishes. A `@State` or `@Published` property can be modified when the task is completed, but it is very important to do this in the main thread because everything that causes a UI update must be run in the main thread.
 
 ```swift
 extension SpreadsheetView {
@@ -824,7 +825,7 @@ Using `DispatchGroup` is a great choice because it is very easy to use. By calli
 
 Remember, if UI is going to be updated by the `notify` closure, it must run in the main thread.
 
-In the code above, some `print` were added to see that the concurrent tasks may end in a different order to one in which they started.
+In the code above, some `print` was added to see that the concurrent tasks may end in a different order to one in which they started.
 
 ```
 Start fetching & parsing spreadsheet 1n4nY49aEwCGocULrdMWrhFr1JjKX5hxFjEssHKoEgIQ
@@ -842,13 +843,13 @@ Finish fetching & parsing spreadsheet 1c6PcEbF65JgM_SU3rGxLe2Y1um_e7c5hNVIMZJ624
 
 ## Accessibility
 
-It´s very important to make the app usable to everybody, a voice can describe whatever happens in the screen, vibrations (haptics) can give information about an action, different text sizes can be supported...
+It´s very important to make the app usable to everybody, a voice can describe whatever happens on the screen, vibrations (haptics) can give information about an action, different text sizes can be supported...
 
 ### Dynamic Type
 
-Some people needs bigger fonts to be able to read the texts in the screen, there are a lot of apps out there that don't support the **Dynamic Type** feature.
+Some people need bigger fonts to be able to read the texts on the screen, there are a lot of apps out there that don't support the **Dynamic Type** feature.
 
-For texts in SwiftUI, the simplest way of doing it, is applying the view modifier `font` with any of the default fonts:
+For texts in SwiftUI, the simplest way of doing it is applying the view modifier `font` with any of the default fonts:
 
 ```swift
 // ...
@@ -867,7 +868,7 @@ When the font increases its size, some texts need more than one line to be repre
 
 For those texts that must not be truncated, `.minimumScaleFactor(0.1)` can be used, so the font size scales accordingly to the factor if it doesn't fit in the available space.
 
-But dynamic sizes don't apply exclusively to texts, images and other views can become bigger too, according to the user settings:
+But dynamic sizes don't apply exclusively to texts, images, and other views can become bigger too, according to the user settings:
 
 - By giving them a fixed size, they won't grow nor shrink. 
 - By using a minimum size and no maximum, for example, views can grow indefinitely and shrink down to a limit, just use the view modifier `.frame(minWidth: 44, minHeight: 44)`.
@@ -875,5 +876,74 @@ But dynamic sizes don't apply exclusively to texts, images and other views can b
 <img src="../assets/img/my-vocabulary/accessibility/xcode_dynamic_types.gif" width="280">
 
 The size of the texts and views can be changed in runtime from Xcode.
+
+### VoiceOver
+
+iOS can describe what's happening on screen to users with eyesight problems, to activate this functionality, just ask Siri.
+
+> Hey Siri, activate VoiceOver
+
+Or, if you want, you can navigate through _Settings > Accessibility > VoiceOver_.
+
+#### Navigation
+
+To navigate through the screen using VoiceOver, specific gestures must be used:
+
+- Swipe left/right with 1 finger to select and read the previous/next accessibility element.
+- Tap an accessibility element with 1 finger to select and read it.
+- Double-tap anywhere in the screen with 1 finger to execute the action associated with the selected accessibility element.
+- Swipe up/down/left/right with 3 fingers to scroll.
+- Tap with 4 fingers in the top/bottom half of the screen to select and read the first/last accessibility element.
+
+#### Group accessibility elements
+
+Any view can be an accessibility element, but some views must not be read by VoiceOver because too much useless information can be annoying, especially with complicated views with multiple children.
+
+<img src="../assets/img/my-vocabulary/accessibility/no_group_elements.gif" width="280">
+
+To avoid this, a view can be considered a group whose children must be ignored, giving a label to the whole set.
+
+```swift
+.accessibilityElement(children: .ignore)
+.accessibilityLabel("Description of the view")
+```
+
+<img src="../assets/img/my-vocabulary/accessibility/group_elements.gif" width="280">
+
+#### Problem with toolbar items in SwiftUI
+
+Presently, there is a problem with SwiftUI's toolbar items accessibility labels. 
+
+A workaround to solve it is to use text instead of an image, VoiceOver will read the text directly.
+
+```swift
+if UIAccessibility.isVoiceOverRunning {
+    Text("Delete all imported translations")
+} else {
+    Image(systemName: "xmark.bin")
+}
+```
+
+#### More info
+
+To provide more information about an accessibility element, use `accessibilityHint`.
+
+```swift
+.accessibilityHint("Double tap to reveal the translation.")
+```
+
+VoiceOver will read the hint after the label, with a long pause between them.
+
+#### Action
+
+Some accessibility elements have no associated action, so when the user double-taps them, nothing happens.
+
+To associate an action to an accessibility element, use `accessibilityAction`.
+
+```swift
+.accessibilityAction {
+    viewModel.importTranslations()
+}
+```
 
 **To be continued...**
