@@ -26,7 +26,8 @@ When I am reading a book in a foreign language, I use Google Translate to transl
 11. [Core Data in background](#core-data-in-background)
 12. [Background and concurrent tasks in SwiftUI](#background-and-concurrent-tasks-in-swiftui)
 13. [Accessibility - Dynamic Type](#accessibility)
-13. [Accessibility - VoiceOver](#voiceover)
+14. [Accessibility - VoiceOver](#voiceover)
+15. [Internationalization and localization](#internationalization-and-localization)
 
 ## Introduction
 
@@ -944,6 +945,91 @@ To associate an action to an accessibility element, use `accessibilityAction`.
 .accessibilityAction {
     viewModel.importTranslations()
 }
+```
+
+## Internationalization and localization
+
+Internationalization and localization are two different concepts, the former makes your app support other languages and the latter adds languages to the app.
+
+### Internationalization
+
+To make an app support different languages easily, some configurations must be made first.
+
+To identify the texts that are not localized, open the "Run options" menu `⌥ + ⌘ + r` and check "Show non localized strings".
+
+<img src="../assets/img/my-vocabulary/localization/show_non_local.png">
+
+This will uppercase every text that has not been localized, with some exceptions:
+
+- Those texts that are obtained from the model (user data) won't be localized, take a look at the translated words and phrases in the screenshot below.
+- Texts that are calculated programmatically, instead of being hardcoded directly, take a look at the word "Filter".
+
+<img src="../assets/img/my-vocabulary/localization/localization_caps.jpg">
+
+```swift
+    // ...
+    private var placeholder: String
+
+    init(placeholder: String, /* ... */) {
+        self.placeholder = placeholder
+        // ...
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                TextField(placeholder, text: $searchString)
+    // ...
+```
+
+### Localizable.strings
+
+Initially, I added all the strings in English, now I am going to support another language, Spanish.
+
+1. First of all, add a `Localizable.strings` file to your project.
+
+<img src="../assets/img/my-vocabulary/localization/add_strings.png">
+
+2. In the main directory of your project, run in Terminal:
+```bash
+find . -name "*.swift" | xargs genstrings -SwiftUI -o ~/Desktop/
+```
+This command will generate another `Localizable.strings` file and it will place it in the desktop, just copy/paste its content into the `Localizable.strings` of the project. 
+
+3. Run the app again, the texts are not uppercased anymore. That means that is localized!
+
+#### Errors
+
+Some texts may not be included in the `Localizable.strings` file, for example, the word "Filter" should not be included in it as it was not uppercased in the previous step.
+
+The solution is to use `LocalizedStringKey` instead of `String` to pass strings as parameters that must be translated.
+
+```swift
+    // ...
+    private var placeholder: LocalizedStringKey
+
+    init(placeholder: LocalizedStringKey, /* ... */) {
+        self.placeholder = placeholder
+        // ...
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            HStack {
+                TextField(placeholder, text: $searchString)
+    // ...
+```
+
+Now, run again the app and check that the word is not uppercased anymore. Xcode logs should print:
+
+```
+[strings] ERROR: Filter not found in table Localizable of bundle CFBundle
+```
+
+To solve this, the only solution is to add manually the string to the `Localizable.strings` file:
+
+```
+"Filter" = "Filter";
 ```
 
 **To be continued...**
