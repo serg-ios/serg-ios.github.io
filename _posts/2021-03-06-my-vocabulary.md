@@ -1,15 +1,16 @@
 ---
 layout: post
 title: My Vocabulary iOS app
-subtitle: App to learn your favorite translations from Google Translate
+subtitle: Learn your Google Translate translations
 gh-repo: serg-ios/my-vocabulary
 gh-badge: [star, fork, follow]
-tags: [iOS, Swift, Google Drive, Google Sign In, Google Translate, XLSX]
+tags: [iOS, Swift, Google Drive, Google Sign In, Google Translate, XLSX, MVVM, Widgets, Accessibility, SwiftUI]
 comments: true
 thumbnail-img: /assets/img/my-vocabulary/myvocabulary-thumbnail.jpg
+readtime: true
 ---
 
-When I am reading a book in a foreign language, I use Google Translate to translate those words that I don't understand...
+When I read a book in a foreign language, I use Google Translate to understand some words and phrases. I am building an app to download those translations and help me learn them.
 
 ## Index
 
@@ -25,46 +26,36 @@ When I am reading a book in a foreign language, I use Google Translate to transl
 10. [MVVM in SwiftUI](#mvvm-in-swiftui)
 11. [Core Data in background](#core-data-in-background)
 12. [Background and concurrent tasks in SwiftUI](#background-and-concurrent-tasks-in-swiftui)
-13. [Accessibility - Dynamic Type](#accessibility)
-14. [Accessibility - VoiceOver](#voiceover)
-15. [Internationalization and localization](#internationalization-and-localization)
-16. [Spotlight](#spotlight)
-17. [Widgets](#widgets)
-18. [Widgets - WidgetBundle](#widgetbundle)
+13. [Dynamic Type](#dynamic-type)
+14. [VoiceOver](#voiceover)
+15. [Default haptics](#default-haptics)
+16. [Custom haptics](#custom-haptics)
+17. [Internationalization and localization](#internationalization-and-localization)
+18. [Spotlight](#spotlight)
+19. [Widgets](#widgets)
+20. [WidgetBundle](#widgetbundle)
+
+---
 
 ## Introduction
 
 If I want to save some words, I mark them as favorites, pressing the star button for each word.
 
-<img src="../assets/img/my-vocabulary/google-cloud/google-translate.png" width="250">
+<img src="../assets/img/my-vocabulary/google-cloud/google-translate.png" width="250" class="center">
 
-This is very useful because if I go to [https://translate.google.es/](https://translate.google.es/), I sign in with the same account and I can export that words into an XLSX file.
+This is very useful because if I go to [https://translate.google.es/](https://translate.google.es/), I sign in with the same account and I can export that words into an [XLSX file](../assets/img/my-vocabulary/drive-file.png).
 
-<img src="../assets/img/my-vocabulary/create-excel.png" width="250"> <img src="../assets/img/my-vocabulary/drive-file.png" width="258">
+<img src="../assets/img/my-vocabulary/create-excel.png" width="250" class="center">
 
-### So...
-
-I want to build an app that downloads this file from Google Drive and helps me learn the words with games, Apple Watch complications, widgets, etc.
+---
 
 ## First steps
 
 I created an empty SwiftUI project with UIKit App Delegate life cycle.
 
-<img src="../assets/img/my-vocabulary/create-project.png" width="250">
-
 Then, I added `GoogleSignIn` and `GoogleAPIClientForREST/Drive` libraries to it, using CocoaPods.
 
 To add CocoaPods to a project, run `pod init` in its main directory. If you don't have `pod` installed on your computer, check [this](https://cocoapods.org/).
-
-```
-🙈 ~/Desktop/my-vocabulary/MyVocabulary$pod init
-Ignoring ffi-1.12.2 because its extensions are not built. Try: gem pristine ffi --version 1.12.2
-Ignoring sassc-2.3.0 because its extensions are not built. Try: gem pristine sassc --version 2.3.0
-Ignoring unf_ext-0.0.7.7 because its extensions are not built. Try: gem pristine unf_ext --version 0.0.7.7
-[!] Existing Podfile found in directory
-```
-
-In my case, `Podfile` already exists, but the first time you run this command, it'll be created.
 
 The deployment target of my app is iOS 14.0, but your `Podfile` must look like mine.
 ```
@@ -81,65 +72,35 @@ These libraries are necessary because I will need to authenticate myself to acce
 
 Finish and run `pod install`.
 
-```
-🙈 ~/Desktop/my-vocabulary/MyVocabulary$pod install
-Ignoring ffi-1.12.2 because its extensions are not built. Try: gem pristine ffi --version 1.12.2
-Ignoring sassc-2.3.0 because its extensions are not built. Try: gem pristine sassc --version 2.3.0
-Ignoring unf_ext-0.0.7.7 because its extensions are not built. Try: gem pristine unf_ext --version 0.0.7.7
-Analyzing dependencies
-Downloading dependencies
-Installing AppAuth (1.4.0)
-Installing GTMAppAuth (1.1.0)
-Installing GTMSessionFetcher (1.5.0)
-Installing GoogleAPIClientForREST (1.5.1)
-Installing GoogleSignIn (5.0.2)
-Generating Pods project
-Integrating client project
-Pod installation complete! There are 2 dependencies from the Podfile and 5 total pods installed.
-```
-
 Once you've installed CocoaPods, close your project, open Xcode again and select your **workspace**. This is very important, otherwise, your project won't build.
 
-<img src="../assets/img/my-vocabulary/pods-xcode.png" width="350">
+<img src="../assets/img/my-vocabulary/pods-xcode.png" width="350" class="center">
+
+---
 
 ## Google Cloud Platform
 
-The first thing that must be done is authentication with Google credentials to access Google Drive.
+The first thing that must be done is authentication with Google credentials to access Google Drive, a **Google API Key** it's necessary .
 
-It's necessary a Google API Key.
+1️⃣ Visit your Google Cloud Platform [dashboard](https://console.cloud.google.com/projectselector2/home/dashboard) and create a project.
 
-1. Visit your Google Cloud Platform [dashboard](https://console.cloud.google.com/projectselector2/home/dashboard) and create a project.
-2. Give a name to it.
+2️⃣ Give a [name](../assets/img/my-vocabulary/google-cloud/google_project_name.jpg) to it.
 
-    <img src="../assets/img/my-vocabulary/google-cloud/google_project_name.jpg" width="250">
+3️⃣ Go to [your APIs](../assets/img/my-vocabulary/google-cloud/see-apis.png).
 
-3. Go to your APIs.
+4️⃣ Enable [Google Drive API](../assets/img/my-vocabulary/google-cloud/enable-drive.png).
 
-    <img src="../assets/img/my-vocabulary/google-cloud/see-apis.png" width="125">
+5️⃣ Create [credentials](../assets/img/my-vocabulary/google-cloud/create-credentials.png).
 
-4. Enable Google Drive API.
+6️⃣ Configure [OAuth screen](../assets/img/my-vocabulary/google-cloud/configure-oauth2.png).
 
-    <img src="../assets/img/my-vocabulary/google-cloud/enable-drive.png" width="250">
+7️⃣ [Add testing emails](../assets/img/my-vocabulary/google-cloud/oauth-email.png), here you should add the Google account in which you have your translations. You will not be able to sign in during development with no registered testing emails.
 
-5. Create credentials.
+8️⃣ Finish the configuration of your [OAuth client](../assets/img/my-vocabulary/google-cloud/finish.png).
 
-    <img src="../assets/img/my-vocabulary/google-cloud/create-credentials.png" width="250">
+9️⃣ In APIs and Services > Credentials, [download the plist](../assets/img/my-vocabulary/google-cloud/download.png) that contains `CLIENT_ID` and `REVERSED_CLIENT_ID`.
 
-6. Configure OAuth screen.
-
-    <img src="../assets/img/my-vocabulary/google-cloud/configure-oauth2.png" width="350">
-
-7. Add testing emails, here you should add the Google account in which you have your translations. You will not be able to sign in during development with no registered testing emails.
-
-    <img src="../assets/img/my-vocabulary/google-cloud/oauth-email.png" width="350">
-
-8. Finish the configuration of your OAuth client.
-
-    <img src="../assets/img/my-vocabulary/google-cloud/finish.png" width="150">
-
-9. In APIs and Services > Credentials, download the `plist` that contains `CLIENT_ID` and `REVERSED_CLIENT_ID`.
-
-    <img src="../assets/img/my-vocabulary/google-cloud/download.png">
+---
 
 ## URL Types configuration
 
@@ -147,7 +108,7 @@ Open the **workspace** of your project and go to Target > Info > **Url Types**.
 
 You should add two **Url Types**, one with the value of the `CLIENT_ID` as URL Scheme and the other with the value of the `REVERSED_CLIENT_ID` of the downloaded file.
 
-<img src="../assets/img/my-vocabulary/url-types.png" width="600">
+<img src="../assets/img/my-vocabulary/url-types.png" width="600" class="center">
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -168,6 +129,8 @@ You should add two **Url Types**, one with the value of the `CLIENT_ID` as URL S
 
 Build the project, everything should work fine 🤞
 
+---
+
 ## Google Sign In, SwiftUI implementation
 
 <a name="didsignin">Google Sign In needs a delegate that will receive all the feedback of the process.</a>
@@ -186,7 +149,7 @@ class GoogleSignInDelegate: NSObject, GIDSignInDelegate, ObservableObject {
 }
 ```
 
-<a name="appdelegate">The singleton that handles the sign-in process needs the `clientID` property and its delegate to be setted, this must be done in the `didFinishLaunchingWithOptions` method of out `AppDelegate`.</a>
+<a name="appdelegate">The shared instance that handles the sign-in process needs the `clientID` property and its delegate to be set, this must be done in the `didFinishLaunchingWithOptions` method of out `AppDelegate`.</a>
 
 ```swift
 @main
@@ -258,7 +221,7 @@ Terminating app due to uncaught exception 'NSInvalidArgumentException',
 reason: 'presentingViewController must be set.'
 ```
 
-The Google Sign In singleton has the property `presentingViewController` that must refer to the view controller that will present the sign-in screen. To fix this, some changes must be done in our `SceneDelegate`.
+The Google Sign In shared instance has the property `presentingViewController` that must refer to the view controller that will present the sign-in screen. To fix this, some changes must be done in our `SceneDelegate`.
 
 ```swift
 import UIKit
@@ -300,6 +263,8 @@ Hurray!! 🎉 🥳 🎊
 
 You have implemented the simplest sign-in with Google, no handling errors, no keeping session open after closing the app... But this will come later.
 
+---
+
 ## Don't upload API Keys to Git
 
 If you have a public repository you might want to hide your Google Sign-In Client ID.
@@ -339,7 +304,7 @@ Now, the variables can be used in the `Info.plist` doing `$(GOOGLE_SIGN_IN_CLIEN
 
 <img src="../assets/img/my-vocabulary/urltypes.png" width="400">
 
-We are almost there... Remember that the client ID was needed in the `AppDelegate` to be setted into `GIDSignIn.sharedInstance().clientID`? I made an extension of `Bundle` that obtains URLType's URL Schemes giving its identifier (see the previous step).
+We are almost there... Remember that the client ID was needed in the `AppDelegate` to be set into `GIDSignIn.sharedInstance().clientID`? I made an extension of `Bundle` that obtains URLType's URL Schemes giving its identifier (see the previous step).
 
 ```swift
 extension Bundle {
@@ -355,6 +320,8 @@ Instead of hardcoding the API key in the `AppDelegate`...
 ```swift
 GIDSignIn.sharedInstance().clientID = Bundle.urlScheme(urlTypeId: "GOOGLE_SIGN_IN_CLIENT_ID")
 ```
+
+---
 
 ## Download spreadsheets from Google Drive
 
@@ -430,6 +397,8 @@ googleDriveService.fetcherService.fetcher(with: url).beginFetch { [weak self] da
 }
 ```
 
+---
+
 ## Parse spreadsheet's translations
 
 This is not as straightforward as fetching the data, to do this, there are libraries like [CoreXLSX](https://github.com/CoreOffice/CoreXLSX).
@@ -492,6 +461,8 @@ do {
 ```
 
 And that's it! With this, you can read a spreadsheet from your Google Drive and use the data in your app.
+
+---
 
 ## MVVM in SwiftUI
 
@@ -641,11 +612,13 @@ struct SpreadsheetView: View {
 ```
 Every time the translations are updated, each spreadsheet checks if its translations have been imported. If this is the case, the status of the spreadsheet's view becomes `imported`.
 
+---
+
 ## Core Data in background
 
 Saving just one or two items in Core Data is trivial, but when we need to store thousands of elements, the app can get stuck while all these items are added.
 
-### Why must run in background?
+### Why must run in background?
 
 ```swift
 for translation in spreadsheet.translations {
@@ -748,6 +721,8 @@ struct SpreadsheetView: View {
 }
 ```
 
+---
+
 ## Background and concurrent tasks in SwiftUI
 
 For other kinds of background tasks in SwiftUI, for which the view must be updated after the task finishes. A `@State` or `@Published` property can be modified when the task is completed, but it is very important to do this in the main thread because everything that causes a UI update must be run in the main thread.
@@ -845,11 +820,9 @@ Finish fetching & parsing spreadsheet 1c6PcEbF65JgM_SU3rGxLe2Y1um_e7c5hNVIMZJ624
 
 <img src="../assets/img/my-vocabulary/concurrency/status_spreadsheets.jpg" width="280">
 
-## Accessibility
+---
 
-It´s very important to make the app usable to everybody, a voice can describe whatever happens on the screen, vibrations (haptics) can give information about an action, different text sizes can be supported...
-
-### Dynamic Type
+## Dynamic Type
 
 Some people need bigger fonts to be able to read the texts on the screen, there are a lot of apps out there that don't support the **Dynamic Type** feature.
 
@@ -881,7 +854,9 @@ But dynamic sizes don't apply exclusively to texts, images, and other views can 
 
 The size of the texts and views can be changed in runtime from Xcode.
 
-### VoiceOver
+---
+
+## VoiceOver
 
 iOS can describe what's happening on screen to users with eyesight problems, to activate this functionality, just ask Siri.
 
@@ -889,7 +864,7 @@ iOS can describe what's happening on screen to users with eyesight problems, to 
 
 Or, if you want, you can navigate through _Settings > Accessibility > VoiceOver_.
 
-#### Navigation
+### Navigation
 
 To navigate through the screen using VoiceOver, specific gestures must be used:
 
@@ -899,7 +874,7 @@ To navigate through the screen using VoiceOver, specific gestures must be used:
 - Swipe up/down/left/right with 3 fingers to scroll.
 - Tap with 4 fingers in the top/bottom half of the screen to select and read the first/last accessibility element.
 
-#### Group accessibility elements
+### Group accessibility elements
 
 Any view can be an accessibility element, but some views must not be read by VoiceOver because too much useless information can be annoying, especially with complicated views with multiple children.
 
@@ -914,7 +889,7 @@ To avoid this, a view can be considered a group whose children must be ignored, 
 
 <img src="../assets/img/my-vocabulary/accessibility/group_elements.gif" width="280">
 
-#### Problem with toolbar items in SwiftUI
+### Problem with toolbar items in SwiftUI
 
 Presently, there is a problem with SwiftUI's toolbar items accessibility labels. 
 
@@ -928,7 +903,7 @@ if UIAccessibility.isVoiceOverRunning {
 }
 ```
 
-#### More info
+### More info
 
 To provide more information about an accessibility element, use `accessibilityHint`.
 
@@ -938,7 +913,7 @@ To provide more information about an accessibility element, use `accessibilityHi
 
 VoiceOver will read the hint after the label, with a long pause between them.
 
-#### Action
+### Action
 
 Some accessibility elements have no associated action, so when the user double-taps them, nothing happens.
 
@@ -949,6 +924,130 @@ To associate an action to an accessibility element, use `accessibilityAction`.
     viewModel.importTranslations()
 }
 ```
+
+---
+
+## Default haptics
+
+It's a great idea to provide information through vibrations, not only helps people with eyesight problems to understand what's happening but also reinforces some events or actions.
+
+By default, there are [3 kinds](https://developer.apple.com/documentation/uikit/uinotificationfeedbackgenerator/feedbacktype) of vibrations provided by the system, the 3 vibrations are different and recognizable.
+
+```swift
+case error   // Indicates that a task has failed.
+case success // Indicates that a task has been completed successfully.
+case warning // Indicates that a task has produced a warning.
+```
+
+Just play the haptic effect.
+
+```swift
+UINotificationFeedbackGenerator().notificationOccurred(.error)
+```
+
+---
+
+## Custom haptics
+
+Is good to use the default haptic notifications because the user is used to them, but custom haptics can be created in case the default ones are not enough.
+
+#### Sharpness
+
+Determines if the effect is pronounced or dull, a value from 0 to 1.
+
+```swift
+let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0)
+```
+
+#### Intensity
+
+Determines the strength of the vibration, a value from 0 to 1.
+
+```swift
+let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1)
+```
+
+#### Curve
+
+Each control point relates a value to an instant and Core Haptics creates a smooth curve between control points.
+
+```swift
+let parameter = CHHapticParameterCurve(
+    parameterID: .hapticIntensityControl,
+    controlPoints: [start, end],
+    relativeTime: 0
+)
+```
+
+Values can go from 0 to 1, for example, if the start control point has a value of 1 for intensity and the end control point has a value of 0, the user will notice a progressive loss of intensity or sharpness in the vibration.
+
+Time is expressed in seconds.
+
+#### Parameter
+
+A curve must know the parameter that is affected by it, which could be sharpness or intensity.
+
+```swift
+let parameter = CHHapticParameterCurve(
+    parameterID: .hapticIntensityControl,
+    controlPoints: [start, end],
+    relativeTime: 0
+)
+
+```
+
+Relative time is the time that passes (in seconds) from the start of the haptic effect, for the curve or event to begin.
+
+Duration is the time in seconds that the event will last.
+
+#### Pattern
+
+Connects events and parameter curves.
+
+```swift
+let pattern = try CHHapticPattern(events: [event1, event2], parameterCurves: [parameter])
+```
+
+#### Engine
+
+Finally, the haptic's engine is in charge to start and play the effect.
+
+```swift
+@State private var engine = try? CHHapticEngine()
+
+private func deleteAllTranslationsHapticEffect() {
+    do {
+        try engine?.start()
+        let sharpness = CHHapticEventParameter(parameterID: .hapticSharpness, value: 0)
+        let intensity = CHHapticEventParameter(parameterID: .hapticIntensity, value: 1)
+        let start = CHHapticParameterCurve.ControlPoint(relativeTime: 0, value: 1)
+        let end = CHHapticParameterCurve.ControlPoint(relativeTime: 1, value: 0)
+        let parameter = CHHapticParameterCurve(
+            parameterID: .hapticIntensityControl,
+            controlPoints: [start, end],
+            relativeTime: 0
+        )
+        let event1 = CHHapticEvent(
+            eventType: .hapticTransient,
+            parameters: [intensity, sharpness],
+            relativeTime: 0
+        )
+        let event2 = CHHapticEvent(
+            eventType: .hapticContinuous,
+            parameters: [sharpness, intensity],
+            relativeTime: 0.125,
+            duration: 1
+        )
+        let pattern = try CHHapticPattern(events: [event1, event2], parameterCurves: [parameter])
+        let player = try engine?.makePlayer(with: pattern)
+        try player?.start(atTime: 0)
+    } catch {
+        // playing haptics didn't work, but that's okay
+    }
+}
+```
+
+---
 
 ## Internationalization and localization
 
@@ -1168,6 +1267,8 @@ This kind of strings, must be added with placeholders to the `Localizable.string
 
 Always remember to translate all the `accessibilityLabel` and `accesibilityHint` 😁
 
+---
+
 ## Spotlight
 
 Supporting this Apple feature is very useful and improves user experience.
@@ -1216,6 +1317,8 @@ func deleteAll(_ objectType: NSManagedObject.Type) {
     CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: ["com.serg-ios.MyVocabulary"])
 }
 ```
+
+---
 
 ## Widgets
 
@@ -1506,7 +1609,7 @@ The strings `description` and `configurationDisplayName` of the widgets, have to
 
 This Apple feature must be taken into consideration in the widgets too.
 
-#### Dynamic Type
+#### Dynamic Type in widgets
 
 Try to use default fonts and the size of the text will grow and shrink accordingly to the user's preferences.
 
@@ -1517,7 +1620,7 @@ Take into consideration that widgets have reduced space, you may want to add a `
 .minimumScaleFactor(0.2)
 ```
 
-#### VoiceOver
+#### VoiceOver in widgets
 
 Just add `accessibilityLabel` to the widget's view, the string will be translated if the key is available in `Localizable.strings`.
 
@@ -1525,5 +1628,6 @@ Just add `accessibilityLabel` to the widget's view, the string will be translate
 .accessibilityElement(children: .ignore)
 .accessibilityLabel("\(translation.translationInput) in \(translation.translationFrom), \(translation.translationOutput) in \(translation.translationTo) . Level \(translation.level).")
 ```
+
 
 **To be continued...**
